@@ -138,7 +138,7 @@ function gl = runMiniGreenhouse(lampType, weather, filename, paramNames, paramVa
     end
     
     if isscalar(controls)
-        controls = makeArtificialControls(controls)
+        controls = makeArtificialControls(controls);
         % controls = ............(controls);
     end
     
@@ -149,7 +149,7 @@ function gl = runMiniGreenhouse(lampType, weather, filename, paramNames, paramVa
     
     if isscalar(indoor)
         % indoor = ............(indoor);
-        indoor = makeArtificialIndoor(indoor)
+        indoor = makeArtificialIndoor(indoor);
     end
     
     disp(datetime('now'))
