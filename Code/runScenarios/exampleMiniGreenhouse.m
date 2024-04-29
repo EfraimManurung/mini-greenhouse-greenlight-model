@@ -9,7 +9,7 @@
 tic; % start the timer
 
 % Weather argument for createGreenLightModel
-seasonLength = 10; %5 it works when not using controls % season length in days
+seasonLength = 1; %5 it works when not using controls % season length in days
 firstDay = 1; % days since beginning of data (01-01-2000)
 
 %   weather         A matrix with 8 columns, in the following format:
@@ -34,23 +34,25 @@ weather(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
 using_controls = true;
 
 if using_controls
+    controls = makeArtificialControls(seasonLength);
 
     % Still using from existed database
-    time_controls = weather(:, 1);
-    air_temperature = weather(:, 3);
-
-    controls(:,1) = time_controls;      % timestamps of the input [s] in regular intervals of 300, starting with 0
-    controls(:,2) = 0;                  % 'thScr' Energy screen closure 			0-1 (1 is fully closed)
-    controls(:,3) = 0;                  % 'blScr' Black out screen closure			0-1 (1 is fully closed)
-    controls(:,4) = 0;                  % 'roof'  Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
-    controls(:,5) = air_temperature;    % 'tPipe' Pipe rail temperature 			°C
-    controls(:,6) = air_temperature;    % 'tGroPipe' Grow pipes temperature 			°C
-    controls(:,7) = 1;                  % 'lamp' Toplights on/off                  0/1 (1 is on)
-    controls(:,8) = 0;                  % 'intLamp' Interlight on/off                 0/1 (1 is on)
-    controls(:,9) = 0;                  % 'extCo2' CO2 injection                     0/1 (1 is on)
+    % time_controls = weather(:, 1);
+    % time_controls = 0:300:86400;
+    % air_temperature = weather(:, 3);
+   
+    % controls(:,1) = ;      % timestamps of the input [s] in regular intervals of 300, starting with 0
+    % controls(:,2) = 0;                  % 'thScr' Energy screen closure 			0-1 (1 is fully closed)
+    % controls(:,3) = 0;                  % 'blScr' Black out screen closure			0-1 (1 is fully closed)
+    % controls(:,4) = 0;                  % 'roof'  Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
+    % controls(:,5) = 5*sin(time*2*pi/86400)+15;    % 'tPipe' Pipe rail temperature 			°C
+    % controls(:,6) = 5*sin(time*2*pi/86400)+15;    % 'tGroPipe' Grow pipes temperature 			°C
+    % controls(:,7) = 1;                  % 'lamp' Toplights on/off                  0/1 (1 is on)
+    % controls(:,8) = 0;                  % 'intLamp' Interlight on/off                 0/1 (1 is on)
+    % controls(:,9) = 0;                  % 'extCo2' CO2 injection                     0/1 (1 is on)
 end
 
-% Create an instance of createGreenLight with the default Vanthoor parameters
+%% Create an instance of createGreenLight with the default Vanthoor parameters
 % led = createGreenLightModel('led', weather, startTime);
 led = createGreenLightModel('led', weather, startTime, controls);
 
@@ -77,7 +79,7 @@ led = changeRes(led, 300);
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
 
-% dateFormat = 'HH:00'; 
+dateFormat = 'HH:00'; 
 % This format can be changed, see help file for MATLAB function datestr
 
 subplot(3,4,1)
@@ -87,10 +89,10 @@ plot(led.d.tOut)
 ylabel('Temperature (°C)')
 legend('Indoor','Outdoor')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,2)
 plot(led.x.vpAir)
@@ -214,5 +216,33 @@ legend('Fruit dry weight','Fruit harvest')
 % xticklabels(datestrings);
 
 toc;
+
+%% make an artificiual dataset to use as input for a createGreenLightModel
+%  length - length of desired dataset(days)
+%  controls will be matrix with 9 columns, in the following formats:
+%   controls        (optional) A matrix with 8 columns, in the following format:
+%       controls(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
+%       controls(:,2)     Energy screen closure 			0-1 (1 is fully closed)
+%       controls(:,3)     Black out screen closure			0-1 (1 is fully closed)
+%       controls(:,4)     Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
+%       controls(:,5)     Pipe rail temperature 			°C
+%       controls(:,6)     Grow pipes temperature 			°C
+%       controls(:,7)     Toplights on/off                  0/1 (1 is on)
+%       controls(:,8)     Interlight on/off                 0/1 (1 is on)
+%       controls(:,9)     CO2 injection                     0/1 (1 is on)
+function controls = makeArtificialControls(length)
+    length = ceil(length);
+    controls = nan(length*288,9);
+    time = 0:300:(length*86400-1);
+    controls(:,1) = time;                           % timestamps
+    controls(:,2) = 0;                              % 'thScr' Energy screen closure 			0-1 (1 is fully closed)
+    controls(:,3) = 0;                              % 'blScr' Black out screen closure			0-1 (1 is fully closed)
+    controls(:,4) = 0;                              % 'roof'  Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
+    controls(:,5) = 5*sin(time*2*pi/86400)+15;      % 'tPipe' Pipe rail temperature 			°C
+    controls(:,6) = 5*sin(time*2*pi/86400)+15;      % 'tGroPipe' Grow pipes temperature 			°C
+    controls(:,7) = 1;                              % 'lamp' Toplights on/off                  0/1 (1 is on)
+    controls(:,8) = 0;                              % 'intLamp' Interlight on/off                 0/1 (1 is on)
+    controls(:,9) = 0;                              % 'extCo2' CO2 injection    
+end
 
 
