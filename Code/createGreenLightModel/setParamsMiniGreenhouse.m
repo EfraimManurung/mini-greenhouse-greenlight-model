@@ -49,7 +49,7 @@ function setParamsMiniGreenhouse(gl)
     setParam(gl, 'epsGroPipe', 0.88);               % Emissivity of grow pipes                                                                  	[-]                     0.88 (same as pipes)
     setParam(gl, 'lGroPipe', 1.655); 			    % Length of grow pipes per gh floor area                                                    	m m^{-2}                1.655 [4], using 0.73 but correcting for extra rubber pipes from the roof to the growpipes
     setParam(gl, 'phiGroPipeE', 35e-3); 		    % External diameter of grow pipes 																m                       35e-3 [1]
-    setParam(gl, 'phiGroPipeI', (35e-3)-(1.2e-3));  % Internal diameter of grow pipes 															m                       (35-1.2)e-3 [1,4]
+    setParam(gl, 'phiGroPipeI', (35e-3)-(1.2e-3));  % Internal diameter of grow pipes 															    m                       (35-1.2)e-3 [1,4]
     setParam(gl, 'pBoilGro', 44*gl.p.aFlr.val);     % Capacity of the grow pipe heating system                                                      W                       44*p.aFlr (Assumed to be 88 W m^{-2} for the entire heating system [1])
     
     setParam(gl, 'cLeakTop', 0.9);                  % Fraction of leakage ventilation going from the top                                            [-]                     

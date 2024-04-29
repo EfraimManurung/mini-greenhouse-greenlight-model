@@ -10,54 +10,42 @@ tic; % start the timer
 
 % Weather argument for createGreenLightModel
 seasonLength = 1; %5 it works when not using controls % season length in days
-firstDay = 1; % days since beginning of data (01-01-2000)
+firstDay = 1; % days since beginning of data 
 
-%   weather         A matrix with 8 columns, in the following format:
-%       weather(:,1)    timestamps of the input [s] in regular intervals
-%       weather(:,2)    radiation     [W m^{-2}]  outdoor global irradiation 
-%       weather(:,3)    temperature   [°C]        outdoor air temperature
-%       weather(:,4)    humidity      [kg m^{-3}] outdoor vapor concentration
-%       weather(:,5)    co2 [kg{CO2} m^{-3}{air}] outdoor CO2 concentration
-%       weather(:,6)    wind        [m s^{-1}] outdoor wind speed
-%       weather(:,7)    sky temperature [°C]
-%       weather(:,8)    temperature of external soil layer [°C]
-%       weather(:,9)    daily radiation sum [MJ m^{-2} day^{-1}]
+%% Choice of lamp
+lampType = 'led'; % 'led', 'hps', or 'none'
 
-[weather, startTime] = loadSelYearHiRes(firstDay, seasonLength);
+% Interface
+using_controls_dataset = true;
+using_weather_dataset = true;
+using_indoor_dataset = true;
 
-secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
+% Controls dataset for createGreenLightModel instance
+if using_controls_dataset
+    controls = controlsDataset(seasonLength);
+end
 
-% number of seconds since beginning of year to startTime
-weather(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
+% Weather dataset for createGreenLightModel instance
+if using_weather_dataset
+    weather = weatherDataset(seasonLength);
+end
 
-% Controls argument createGreenLightModel
-using_controls = true;
-
-if using_controls
-    controls = makeArtificialControls(seasonLength);
-
-    % Still using from existed database
-    % time_controls = weather(:, 1);
-    % time_controls = 0:300:86400;
-    % air_temperature = weather(:, 3);
-   
-    % controls(:,1) = ;      % timestamps of the input [s] in regular intervals of 300, starting with 0
-    % controls(:,2) = 0;                  % 'thScr' Energy screen closure 			0-1 (1 is fully closed)
-    % controls(:,3) = 0;                  % 'blScr' Black out screen closure			0-1 (1 is fully closed)
-    % controls(:,4) = 0;                  % 'roof'  Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
-    % controls(:,5) = 5*sin(time*2*pi/86400)+15;    % 'tPipe' Pipe rail temperature 			°C
-    % controls(:,6) = 5*sin(time*2*pi/86400)+15;    % 'tGroPipe' Grow pipes temperature 			°C
-    % controls(:,7) = 1;                  % 'lamp' Toplights on/off                  0/1 (1 is on)
-    % controls(:,8) = 0;                  % 'intLamp' Interlight on/off                 0/1 (1 is on)
-    % controls(:,9) = 0;                  % 'extCo2' CO2 injection                     0/1 (1 is on)
+% Indoor dataset for createGreenLightModel instance
+if using_indoor_dataset
+    indoor = indoorDataset(seasonLength);
 end
 
 %% Create an instance of createGreenLight with the default Vanthoor parameters
-% led = createGreenLightModel('led', weather, startTime);
-led = createGreenLightModel('led', weather, startTime, controls);
+% conver weather timestamps from datenum to seconds since beginning of data
+startTime = datetime(weather(1,1),'ConvertFrom','datenum');
+
+weather(:,1) = (weather(:,1)-weather(1,1))*86400;
+controls(:,1) = (controls(:,1)-controls(1,1))*86400;
+
+% led = createGreenLightModel('led', weather, startTime, controls, indoor);
+led = createGreenLightModel(lampType, weather, startTime, controls);
 
 % Parameters for mini-greenhouse
-% Parameters are good 
 setParamsMiniGreenhouse(led);      % set greenhouse structure
 setMiniGreenhouseLedParams(led);   % set lamp params
 
@@ -101,10 +89,10 @@ plot(led.d.vpOut)
 ylabel('Vapor pressure (Pa)')
 legend('Indoor','Outdoor')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,3)
 plot(led.a.rhIn)
@@ -113,10 +101,10 @@ plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100));
 ylabel('Relative humidity (%)')
 legend('Indoor','Outdoor')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,4)
 plot(led.x.co2Air)
@@ -125,10 +113,10 @@ plot(led.d.co2Out)
 ylabel('CO2 concentration (mg m^{-3})')
 legend('Indoor','Outdoor')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,5)
 plot(led.a.co2InPpm)
@@ -137,10 +125,10 @@ plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out))
 ylabel('CO2 concentration (ppm)')
 legend('Indoor','Outdoor')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,6)
 plot(led.d.iGlob)
@@ -153,10 +141,10 @@ legend('Outdoor ledobal solar radiation','PAR above the canopy (sun+lamp)',...
 'Lamp electric input','PAR above the canopy (sun)', 'PAR above the canopy (lamp)')
 ylabel('W m^{-2}')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,7)
 plot(led.p.parJtoUmolSun*led.a.rParGhSun)
@@ -165,10 +153,10 @@ plot(led.p.zetaLampPar*led.a.rParGhLamp)
 legend('PPFD from the sun','PPFD from the lamp')
 ylabel('umol (PAR) m^{-2} s^{-1}')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,9)
 plot(led.a.mcAirCan)
@@ -180,10 +168,10 @@ ylabel('mg m^{-2} s^{-1}')
 legend('Net assimilation (CO_2)', 'Net photosynthesis (gross photosynthesis minus photorespirattion, CH_2O)',...
 'Growth respiration (CH_2O)','Maintenance respiration (CH_2O)')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,10)
 plot(led.x.cFruit)
@@ -197,10 +185,10 @@ plot(led.a.lai)
 ylabel('m^2 m^{-2}')
 legend('Fruit dry weight','Stem dry weight','Leaf dry weight','Buffer content','LAI')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 subplot(3,4,11)
 plot(led.x.cFruit)
@@ -210,14 +198,49 @@ plot(led.a.mcFruitHar)
 ylabel('mg (CH_2O) m^{-2} s^{-1}')
 legend('Fruit dry weight','Fruit harvest')
 
-% numticks = get(gca,'XTick');
-% dateticks = datenum(datenum(led.t.label)+numticks/86400);
-% datestrings = datestr(dateticks,dateFormat);
-% xticklabels(datestrings);
+numticks = get(gca,'XTick');
+dateticks = datenum(datenum(led.t.label)+numticks/86400);
+datestrings = datestr(dateticks,dateFormat);
+xticklabels(datestrings);
 
 toc;
 
-%% make an artificiual dataset to use as input for a createGreenLightModel
+
+%% Weather dataset
+function weather = weatherDataset(length)
+% make an artificiual dataset to use as input for a createGreenLightModel
+%   length  - length of desired dataset (days)
+%   weather  will be a matrix with 9 columns, in the following format:
+%       weather(:,1)    timestamps of the input [datenum] in 5 minute intervals
+%       weather(:,2)    radiation     [W m^{-2}]  outdoor global irradiation 
+%       weather(:,3)    temperature   [°C]        outdoor air temperature
+%       weather(:,4)    humidity      [kg m^{-3}] outdoor vapor concentration
+%       weather(:,5)    co2 [kg{CO2} m^{-3}{air}] outdoor CO2 concentration
+%       weather(:,6)    wind        [m s^{-1}] outdoor wind speed
+%       weather(:,7)    sky temperature [°C]
+%       weather(:,8)    temperature of external soil layer [°C]
+%       weather(:,9)    daily radiation sum [MJ m^{-2} day^{-1}]
+
+    length = ceil(length);
+    weather = nan(length*288,9);
+    time = 0:300:(length*86400-1);
+    weather(:,1) = time;
+    weather(:,2) = 350*max(0,sin(time*2*pi/86400));
+    weather(:,3) = 5*sin(time*2*pi/86400)+15;
+    weather(:,4) = 0.006*ones(length*288,1);
+    weather(:,5) = co2ppm2dens(weather(:,3), 410);
+    weather(:,6) = 1*ones(length*288,1);
+    weather(:,7) = weather(:,3) - 20;
+    weather(:,8) = 20*ones(length*288,1);
+    
+    % convert timestamps to datenum
+    weather(:,1) = time/86400+1;
+    weather(:,9) = dayLightSum(weather(:,1), weather(:,2));
+
+end
+
+%% Controls dataset
+% make an artificiual dataset to use as input for a createGreenLightModel
 %  length - length of desired dataset(days)
 %  controls will be matrix with 9 columns, in the following formats:
 %   controls        (optional) A matrix with 8 columns, in the following format:
@@ -230,7 +253,7 @@ toc;
 %       controls(:,7)     Toplights on/off                  0/1 (1 is on)
 %       controls(:,8)     Interlight on/off                 0/1 (1 is on)
 %       controls(:,9)     CO2 injection                     0/1 (1 is on)
-function controls = makeArtificialControls(length)
+function controls = controlsDataset(length)
     length = ceil(length);
     controls = nan(length*288,9);
     time = 0:300:(length*86400-1);
@@ -242,7 +265,37 @@ function controls = makeArtificialControls(length)
     controls(:,6) = 5*sin(time*2*pi/86400)+15;      % 'tGroPipe' Grow pipes temperature 			°C
     controls(:,7) = 1;                              % 'lamp' Toplights on/off                  0/1 (1 is on)
     controls(:,8) = 0;                              % 'intLamp' Interlight on/off                 0/1 (1 is on)
-    controls(:,9) = 0;                              % 'extCo2' CO2 injection    
+    controls(:,9) = 0;                              % 'extCo2' CO2 injection   
+
+    % convert timestamps to datenum
+    controls(:,1) = time/86400+1;
 end
 
+%% Indoor dataset
+% make an artificiual dataset to use as input for a createGreenLightModel
+%   indoor          (optional) A 3 column matrix with:
+%       indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
+%       indoor(:,2)     temperature       [°C]             indoor air temperature
+%       indoor(:,3)     vapor pressure    [Pa]             indoor vapor concentration
+%       indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
+function indoor = indoorDataset(length)
+    length = ceil(length);
+    indoor = nan(length*288,4);
+    time = 0:300:(length*86400-1);
+    
+    temperature_outside = 5*sin(time*2*pi/86400)-15;
 
+    indoor(:,1) = time; 
+    indoor(:,2) = 5*sin(time*2*pi/86400);  
+    
+    % Calculate saturation vapor pressure
+    es = 6.112 * exp(17.67 * indoor(:,2) ./ (indoor(:,2) + 243.5));
+    
+    % Calculate indoor vapor pressure using RH
+    indoor(:,3) = es * (70 / 100);
+    
+    indoor(:,4) = co2ppm2dens(temperature_outside, 410);
+
+    % convert timestamps to datenum
+    indoor(:,1) = time/86400+1;
+end
