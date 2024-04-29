@@ -9,7 +9,7 @@
 tic; % start the timer
 
 % Weather argument for createGreenLightModel
-seasonLength = 1; %5 it works when not using controls % season length in days
+seasonLength = 2; % season length in days
 firstDay = 1; % days since beginning of data 
 
 %% Choice of lamp
@@ -41,6 +41,7 @@ startTime = datetime(weather(1,1),'ConvertFrom','datenum');
 
 weather(:,1) = (weather(:,1)-weather(1,1))*86400;
 controls(:,1) = (controls(:,1)-controls(1,1))*86400;
+indoor(:,1) = (indoor(:,1)-indoor(1,1))*86400;
 
 % led = createGreenLightModel('led', weather, startTime, controls, indoor);
 led = createGreenLightModel(lampType, weather, startTime, controls);
@@ -52,6 +53,10 @@ setMiniGreenhouseLedParams(led);   % set lamp params
 % Parameters for Bleiswjik2010, to make some tests
 % setParamsBleiswijk2010(led);    % set greenhouse structure
 % setBleiswijk2010LedParams(led); % set lamp params
+
+%% Control parameters
+setParam(led, 'rhMax', 90);        % upper bound on relative humidity   
+% setParam(led, 'thetaLampMax', 33.33);   %OK  % Maximum intensity of lamps
 
 % Set initial values for crop
 led.x.cLeaf.val = 0.7*6240*10;
@@ -70,7 +75,7 @@ led = changeRes(led, 300);
 dateFormat = 'HH:00'; 
 % This format can be changed, see help file for MATLAB function datestr
 
-subplot(3,4,1)
+subplot(2,3,1)
 plot(led.x.tAir)
 hold on
 plot(led.d.tOut)
@@ -82,19 +87,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,2)
-plot(led.x.vpAir)
-hold on
-plot(led.d.vpOut)
-ylabel('Vapor pressure (Pa)')
-legend('Indoor','Outdoor')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-subplot(3,4,3)
+subplot(2,3,2)
 plot(led.a.rhIn)
 hold on
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100));
@@ -106,7 +99,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,4)
+subplot(2,3,3)
 plot(led.x.co2Air)
 hold on
 plot(led.d.co2Out)
@@ -118,7 +111,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,5)
+subplot(2,3,4)
 plot(led.a.co2InPpm)
 hold on
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out))
@@ -130,7 +123,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,6)
+subplot(2,3,5)
 plot(led.d.iGlob)
 hold on
 plot(led.a.rParGhSun+led.a.rParGhLamp)
@@ -146,7 +139,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,7)
+subplot(2,3,6)
 plot(led.p.parJtoUmolSun*led.a.rParGhSun)
 hold on
 plot(led.p.zetaLampPar*led.a.rParGhLamp)
@@ -158,55 +151,7 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(3,4,9)
-plot(led.a.mcAirCan)
-hold on
-plot(led.a.mcAirBuf)
-plot(led.a.mcBufAir)
-plot(led.a.mcOrgAir)
-ylabel('mg m^{-2} s^{-1}')
-legend('Net assimilation (CO_2)', 'Net photosynthesis (gross photosynthesis minus photorespirattion, CH_2O)',...
-'Growth respiration (CH_2O)','Maintenance respiration (CH_2O)')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-subplot(3,4,10)
-plot(led.x.cFruit)
-hold on
-plot(led.x.cStem)
-plot(led.x.cLeaf)
-plot(led.x.cBuf)
-ylabel('mg (CH_2O) m^{-2}')
-yyaxis right
-plot(led.a.lai)
-ylabel('m^2 m^{-2}')
-legend('Fruit dry weight','Stem dry weight','Leaf dry weight','Buffer content','LAI')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-subplot(3,4,11)
-plot(led.x.cFruit)
-ylabel('mg (CH_2O) m^{-2}')
-yyaxis right
-plot(led.a.mcFruitHar)
-ylabel('mg (CH_2O) m^{-2} s^{-1}')
-legend('Fruit dry weight','Fruit harvest')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-toc;
-
-
-%% Weather dataset
+%% Artificial Weather dataset
 function weather = weatherDataset(length)
 % make an artificiual dataset to use as input for a createGreenLightModel
 %   length  - length of desired dataset (days)
@@ -229,7 +174,8 @@ function weather = weatherDataset(length)
     weather(:,3) = 5*sin(time*2*pi/86400)+15;
     weather(:,4) = 0.006*ones(length*288,1);
     weather(:,5) = co2ppm2dens(weather(:,3), 410);
-    weather(:,6) = 1*ones(length*288,1);
+    % weather(:,6) = 1*ones(length*288,1);
+    weather(:,6) = 0;
     weather(:,7) = weather(:,3) - 20;
     weather(:,8) = 20*ones(length*288,1);
     
