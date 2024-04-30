@@ -30,13 +30,15 @@ using_indoor_dataset = true;
 
 % Controls dataset for createGreenLightModel instance
 if using_controls_dataset
-    controls = controlsDataset(seasonLength);
+    controls = controlsParameters(seasonLength);
     controls(:,1) = (controls(:,1)-controls(1,1))*86400;
 end
 
 % Weather dataset for createGreenLightModel instance
 if using_artificial_weather_dataset
     weather = weatherDataset(seasonLength);
+
+    % convert weather timestamps from datenum to seconds since beginning of data
     weather(:,1) = (weather(:,1)-weather(1,1))*86400;
 end
 
@@ -61,8 +63,11 @@ setMiniGreenhouseLedParams(led);   % set lamp params
 % setParamsBleiswijk2010(led);    % set greenhouse structure
 % setBleiswijk2010LedParams(led); % set lamp params
 
+% Reset other paraemetrs that depend on previously defined parameters
+setDepParams(led);
+
 %% Control parameters
-setParam(led, 'rhMax', 90);        % upper bound on relative humidity   
+setParam(led, 'rhMax', 70);        % upper bound on relative humidity   
 % setParam(led, 'thetaLampMax', 33.33);   %OK  % Maximum intensity of lamps
 
 % Set initial values for crop
@@ -83,11 +88,12 @@ toc;
 dateFormat = 'HH:00'; 
 % This format can be changed, see help file for MATLAB function datestr
 
-subplot(2,3,1)
+figure(1)
 plot(led.x.tAir)
 hold on
 plot(led.d.tOut)
 ylabel('Temperature (°C)')
+hold off
 legend('Indoor','Outdoor')
 
 numticks = get(gca,'XTick');
@@ -95,11 +101,13 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(2,3,2)
+
+figure(2)
 plot(led.a.rhIn)
 hold on
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100));
 ylabel('Relative humidity (%)')
+hold off
 legend('Indoor','Outdoor')
 
 numticks = get(gca,'XTick');
@@ -107,57 +115,58 @@ dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
 
-subplot(2,3,3)
+figure(3)
 plot(led.x.co2Air)
 hold on
 plot(led.d.co2Out)
 ylabel('CO2 concentration (mg m^{-3})')
+hold off
 legend('Indoor','Outdoor')
 
 numticks = get(gca,'XTick');
 dateticks = datenum(datenum(led.t.label)+numticks/86400);
 datestrings = datestr(dateticks,dateFormat);
 xticklabels(datestrings);
-
-subplot(2,3,4)
-plot(led.a.co2InPpm)
-hold on
-plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out))
-ylabel('CO2 concentration (ppm)')
-legend('Indoor','Outdoor')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-subplot(2,3,5)
-plot(led.d.iGlob)
-hold on
-plot(led.a.rParGhSun+led.a.rParGhLamp)
-plot(led.a.qLampIn)
-plot(led.a.rParGhSun)
-plot(led.a.rParGhLamp)
-legend('Outdoor ledobal solar radiation','PAR above the canopy (sun+lamp)',...
-'Lamp electric input','PAR above the canopy (sun)', 'PAR above the canopy (lamp)')
-ylabel('W m^{-2}')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-subplot(2,3,6)
-plot(led.p.parJtoUmolSun*led.a.rParGhSun)
-hold on
-plot(led.p.zetaLampPar*led.a.rParGhLamp)
-legend('PPFD from the sun','PPFD from the lamp')
-ylabel('umol (PAR) m^{-2} s^{-1}')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
+% 
+% subplot(2,3,4)
+% plot(led.a.co2InPpm)
+% hold on
+% plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out))
+% ylabel('CO2 concentration (ppm)')
+% legend('Indoor','Outdoor')
+% 
+% numticks = get(gca,'XTick');
+% dateticks = datenum(datenum(led.t.label)+numticks/86400);
+% datestrings = datestr(dateticks,dateFormat);
+% xticklabels(datestrings);
+% 
+% subplot(2,3,5)
+% plot(led.d.iGlob)
+% hold on
+% plot(led.a.rParGhSun+led.a.rParGhLamp)
+% plot(led.a.qLampIn)
+% plot(led.a.rParGhSun)
+% plot(led.a.rParGhLamp)
+% legend('Outdoor ledobal solar radiation','PAR above the canopy (sun+lamp)',...
+% 'Lamp electric input','PAR above the canopy (sun)', 'PAR above the canopy (lamp)')
+% ylabel('W m^{-2}')
+% 
+% numticks = get(gca,'XTick');
+% dateticks = datenum(datenum(led.t.label)+numticks/86400);
+% datestrings = datestr(dateticks,dateFormat);
+% xticklabels(datestrings);
+% 
+% subplot(2,3,6)
+% plot(led.p.parJtoUmolSun*led.a.rParGhSun)
+% hold on
+% plot(led.p.zetaLampPar*led.a.rParGhLamp)
+% legend('PPFD from the sun','PPFD from the lamp')
+% ylabel('umol (PAR) m^{-2} s^{-1}')
+% 
+% numticks = get(gca,'XTick');
+% dateticks = datenum(datenum(led.t.label)+numticks/86400);
+% datestrings = datestr(dateticks,dateFormat);
+% xticklabels(datestrings);
 
 %% Artificial Weather dataset
 function weather = weatherDataset(length)
@@ -193,8 +202,7 @@ function weather = weatherDataset(length)
 
 end
 
-%% Controls dataset
-% make an artificiual dataset to use as input for a createGreenLightModel
+%% Controls parameters
 %  length - length of desired dataset(days)
 %  controls will be matrix with 9 columns, in the following formats:
 %   controls        (optional) A matrix with 8 columns, in the following format:
@@ -207,7 +215,7 @@ end
 %       controls(:,7)     Toplights on/off                  0/1 (1 is on)
 %       controls(:,8)     Interlight on/off                 0/1 (1 is on)
 %       controls(:,9)     CO2 injection                     0/1 (1 is on)
-function controls = controlsDataset(length)
+function controls = controlsParameters(length)
     length = ceil(length);
     controls = nan(length*288,9);
     time = 0:300:(length*86400-1);
@@ -226,7 +234,7 @@ function controls = controlsDataset(length)
 end
 
 %% Indoor dataset
-% make an artificiual dataset to use as input for a createGreenLightModel
+% make an artificial dataset to use as input for a createGreenLightModel
 %   indoor          (optional) A 3 column matrix with:
 %       indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
 %       indoor(:,2)     temperature       [°C]             indoor air temperature
