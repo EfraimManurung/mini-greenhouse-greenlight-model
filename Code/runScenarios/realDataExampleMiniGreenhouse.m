@@ -9,16 +9,8 @@
 tic; % start the timer
 
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 2; % season length in days
 firstDay = 1; % days since beginning of data 
-
-%% Real dataset for weather
-[weather, startTime] = loadMiniGreenhouseData(firstDay, seasonLength);
-
-secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
-    % number of seconds since beginning of year to startTime
-
-weather(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
 
 %% Choice of lamp
 lampType = 'led'; % 'led', 'hps', or 'none'
@@ -26,7 +18,7 @@ lampType = 'led'; % 'led', 'hps', or 'none'
 % Interface
 using_controls_dataset = true;
 using_artificial_weather_dataset = false;
-using_indoor_dataset = true;
+using_artificial_indoor_dataset = false;
 
 % Controls dataset for createGreenLightModel instance
 if using_controls_dataset
@@ -40,10 +32,19 @@ if using_artificial_weather_dataset
 
     % convert weather timestamps from datenum to seconds since beginning of data
     weather(:,1) = (weather(:,1)-weather(1,1))*86400;
+else
+    % Real dataset for weather
+    % [weather, startTime] = loadMiniGreenhouseData(firstDay, seasonLength);
+    [weather, startTime] = loadSelYearHiRes(firstDay, seasonLength);
+
+    secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
+    % number of seconds since beginning of year to startTime
+
+    weather(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
 end
 
 % Indoor dataset for createGreenLightModel instance
-if using_indoor_dataset
+if using_artificial_indoor_dataset
     indoor = indoorDataset(seasonLength);
     indoor(:,1) = (indoor(:,1)-indoor(1,1))*86400;
 end
@@ -53,7 +54,7 @@ end
 startTime = datetime(weather(1,1),'ConvertFrom','datenum');
 
 % led = createGreenLightModel('led', weather, startTime, controls, indoor);
-led = createGreenLightModel(lampType, weather, startTime, controls);
+led = createGreenLightModel(lampType, weather, startTime);
 
 % Parameters for mini-greenhouse
 setParamsMiniGreenhouse(led);      % set greenhouse structure
@@ -63,11 +64,11 @@ setMiniGreenhouseLedParams(led);   % set lamp params
 % setParamsBleiswijk2010(led);    % set greenhouse structure
 % setBleiswijk2010LedParams(led); % set lamp params
 
-% Reset other paraemetrs that depend on previously defined parameters
-setDepParams(led);
+% Reset other parameters that depend on previously defined parameters
+% setDepParams(led);
 
 %% Control parameters
-setParam(led, 'rhMax', 70);        % upper bound on relative humidity   
+setParam(led, 'rhMax', 87);        % upper bound on relative humidity   
 % setParam(led, 'thetaLampMax', 33.33);   %OK  % Maximum intensity of lamps
 
 % Set initial values for crop
@@ -85,48 +86,79 @@ toc;
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
 
-dateFormat = 'HH:00'; 
+% dateFormat = 'HH:00'; 
 % This format can be changed, see help file for MATLAB function datestr
 
 figure(1)
-plot(led.x.tAir)
+plot(led.x.tAir,'LineWidth',1.5)
 hold on
-plot(led.d.tOut)
-ylabel('Temperature (°C)')
+plot(led.d.tOut,'LineWidth',1.5)
 hold off
+
+% Get current x-axis ticks
+numticks = get(gca,'XTick');
+
+% Convert timestamps to datenum format
+% divided by 86400
+dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
+
+% Format the date strings
+if seasonLength > 2
+    datestrings = datestr(dateticks, 'dd');
+else
+    datestrings = datestr(dateticks, 'HH:00');
+end
+
+% Set x-axis tick labels
+xticks(numticks);
+xticklabels(datestrings);
+
+% Rotate x-axis tick labels to avoid overlapping
+xtickangle(45);
+
+% Add other plot elements
+ylabel('Temperature (°C)')
+xlabel('Date')
 legend('Indoor','Outdoor')
 
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
+
 
 
 figure(2)
-plot(led.a.rhIn)
+plot(led.a.rhIn,'LineWidth',1.5)
 hold on
-plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100));
+plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
+hold off
+
+% Add dates to x axis
+xticks(0:seasonLength);
+xticklabels(datestr(firstDay+1+(0:seasonLength),'dd/mm'))
+xticks(0:25:seasonLength);
+xticklabels(datestr(firstDay+1+(0:25:seasonLength),'dd/mm'))
+
+% Add other plot elements
+legend('Indoor','Outdoor')
+xlabel('Date')
 ylabel('Relative humidity (%)')
-hold off
-legend('Indoor','Outdoor')
 
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
-
-figure(3)
-plot(led.x.co2Air)
-hold on
-plot(led.d.co2Out)
-ylabel('CO2 concentration (mg m^{-3})')
-hold off
-legend('Indoor','Outdoor')
-
-numticks = get(gca,'XTick');
-dateticks = datenum(datenum(led.t.label)+numticks/86400);
-datestrings = datestr(dateticks,dateFormat);
-xticklabels(datestrings);
+% 
+% numticks = get(gca,'XTick');
+% dateticks = datenum(datenum(led.t.label)+numticks/86400);
+% datestrings = datestr(dateticks,dateFormat);
+% xticklabels(datestrings);
+% 
+% figure(3)
+% plot(led.x.co2Air)
+% hold on
+% plot(led.d.co2Out)
+% ylabel('CO2 concentration (mg m^{-3})')
+% hold off
+% legend('Indoor','Outdoor')
+% 
+% numticks = get(gca,'XTick');
+% dateticks = datenum(datenum(led.t.label)+numticks/86400);
+% datestrings = datestr(dateticks,dateFormat);
+% xticklabels(datestrings);
 % 
 % subplot(2,3,4)
 % plot(led.a.co2InPpm)
