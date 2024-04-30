@@ -12,12 +12,20 @@ tic; % start the timer
 seasonLength = 1; % season length in days
 firstDay = 1; % days since beginning of data 
 
+%% Real dataset for weather
+[weather, startTime] = loadMiniGreenhouseData(firstDay, seasonLength);
+
+secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
+    % number of seconds since beginning of year to startTime
+
+weather(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
+
 %% Choice of lamp
 lampType = 'led'; % 'led', 'hps', or 'none'
 
 % Interface
 using_controls_dataset = true;
-using_weather_dataset = true;
+using_artificial_weather_dataset = false;
 using_indoor_dataset = true;
 
 % Controls dataset for createGreenLightModel instance
@@ -27,7 +35,7 @@ if using_controls_dataset
 end
 
 % Weather dataset for createGreenLightModel instance
-if using_weather_dataset
+if using_artificial_weather_dataset
     weather = weatherDataset(seasonLength);
     weather(:,1) = (weather(:,1)-weather(1,1))*86400;
 end
