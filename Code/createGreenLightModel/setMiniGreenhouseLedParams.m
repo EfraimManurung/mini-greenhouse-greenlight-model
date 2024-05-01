@@ -30,22 +30,22 @@ function setMiniGreenhouseLedParams(gl)
                                                 % Parameter                                                                                     unit                    Value and reference
     %% Lamp parameters
     % LED
-    setParam(gl, 'thetaLampMax', 65.06);              % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
-    setParam(gl, 'heatCorrection', 0);   			% correction for temperature setpoint when lamps are on 										[C]   									0
-    setParam(gl, 'etaLampPar', 0.55);               % fraction of lamp input converted to PAR 														[-]                                     [3] gives 0.33 with a lamp of 1.7 umol/J. This lamp is 1.6 umol/J [2], i.e. 6% less efficient as the one in [3]
-    setParam(gl, 'etaLampNir', 0.02);               % fraction of lamp input converted to NIR 														[-]                                     [3]
-    setParam(gl, 'tauLampPar', 0.955);               % transmissivity of lamp layer to PAR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
-    setParam(gl, 'rhoLampPar', 0);                  % reflectivity of lamp layer to PAR 															[-]                                     0
-    setParam(gl, 'tauLampNir', 0.955);               % transmissivity of lamp layer to NIR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
-    setParam(gl, 'rhoLampNir', 0);                  % reflectivity of lamp layer to NIR 															[-]                                     0
-    setParam(gl, 'tauLampFir', 0.955);               % transmissivity of lamp layer to FIR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
-    setParam(gl, 'aLamp', 0.045);                    % lamp area 																					[m^{2}{lamp} m^{-2}{floor}]             Pg. 22 [1] (light loss due to armatures)
-    setParam(gl, 'epsLampTop', 0.0);               % emissivity of top side of lamp 																[-]                                     assumed that lamps act the same as heating pipes
-    setParam(gl, 'epsLampBottom', 0.0);            % emissivity of bottom side of lamp 															[-]                                     assumed that lamps act the same as heating pipes
-    setParam(gl, 'capLamp', 10);                    % heat capacity of lamp 																		[J K^{-1} m^{-2}]                       
-    setParam(gl, 'cHecLampAir', 2.3);                % heat exchange coefficient of lamp                                                             [W m^{-2} K^{-1}]                       
-    setParam(gl, 'etaLampCool', 0.0);                 % fraction of lamp input removed by cooling                                                     [-]                                     Estimate based on pg. 50 [1]
-    setParam(gl, 'zetaLampPar', 5.4);            % J to umol conversion of PAR output of lamp                                                    [umol{PAR} J^{-1}]                      Efficacy of 1.6 umol/J [2], divided by 0.31 fraction to PAR (see above)
+    setParam(gl, 'thetaLampMax', 65.06);   %OK  % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
+    setParam(gl, 'heatCorrection', 0);   	    % correction for temperature setpoint when lamps are on 										[C]   									0
+    setParam(gl, 'etaLampPar', 0.55);      %OK  % fraction of lamp input converted to PAR 														[-]                                     [3] gives 0.33 with a lamp of 1.7 umol/J. This lamp is 1.6 umol/J [2], i.e. 6% less efficient as the one in [3]
+    setParam(gl, 'etaLampNir', 0.02);      %OK  % fraction of lamp input converted to NIR 														[-]                                     [3]
+    setParam(gl, 'tauLampPar', 0.955);     %OK  % transmissivity of lamp layer to PAR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
+    setParam(gl, 'rhoLampPar', 0);         %OK  % reflectivity of lamp layer to PAR 															[-]                                     0
+    setParam(gl, 'tauLampNir', 0.955);     %OK  % transmissivity of lamp layer to NIR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
+    setParam(gl, 'rhoLampNir', 0);         %OK  % reflectivity of lamp layer to NIR 															[-]                                     0
+    setParam(gl, 'tauLampFir', 0.955);     %OK  % transmissivity of lamp layer to FIR 															[-]                                     Pg. 22 [1] (light loss due to armatures)
+    setParam(gl, 'aLamp', 0.045);          %OK  % lamp area 																					[m^{2}{lamp} m^{-2}{floor}]             Pg. 22 [1] (light loss due to armatures)
+    setParam(gl, 'epsLampTop', 0.0);       %OK  % emissivity of top side of lamp 																[-]                                     assumed that lamps act the same as heating pipes
+    setParam(gl, 'epsLampBottom', 0.0);    %OK  % emissivity of bottom side of lamp 															[-]                                     assumed that lamps act the same as heating pipes
+    setParam(gl, 'capLamp', 10);           %OK  % heat capacity of lamp 																		[J K^{-1} m^{-2}]                       
+    setParam(gl, 'cHecLampAir', 2.3);      %OK  % heat exchange coefficient of lamp                                                             [W m^{-2} K^{-1}]                       
+    setParam(gl, 'etaLampCool', 0.0);      %OK  % fraction of lamp input removed by cooling                                                     [-]                                     Estimate based on pg. 50 [1]
+    setParam(gl, 'zetaLampPar', 5.4);      %OK  % J to umol conversion of PAR output of lamp                                                    [umol{PAR} J^{-1}]                      Efficacy of 1.6 umol/J [2], divided by 0.31 fraction to PAR (see above)
 
     % Reset other parameters that may depend on parameters changed above
     setDepParams(gl);    
