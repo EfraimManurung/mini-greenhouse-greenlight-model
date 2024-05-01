@@ -55,32 +55,46 @@ startTime = datetime(weather(1,1),'ConvertFrom','datenum');
 
 % led = createGreenLightModel('led', weather, startTime, controls, indoor);
 led = createGreenLightModel(lampType, weather, startTime);
+led_controls = createGreenLightModel(lampType, weather, startTime,controls);
 
 % Parameters for mini-greenhouse
 setParamsMiniGreenhouse(led);      % set greenhouse structure
 setMiniGreenhouseLedParams(led);   % set lamp params
 
+setParamsMiniGreenhouse(led_controls);      % set greenhouse structure
+setMiniGreenhouseLedParams(led_controls);   % set lamp params
+
 % Parameters for Bleiswjik2010, to make some tests
 % setParamsBleiswijk2010(led);    % set greenhouse structure
 % setBleiswijk2010LedParams(led); % set lamp params
 
-% Reset other parameters that depend on previously defined parameters
-% setDepParams(led);
-
 %% Control parameters
-setParam(led, 'rhMax', 87);        % upper bound on relative humidity   
+%setParam(led, 'rhMax', 100);        % upper bound on relative humidity   
+setParam(led_controls, 'rhMax', 87);        % upper bound on relative humidity   
+
 % setParam(led, 'thetaLampMax', 33.33);   %OK  % Maximum intensity of lamps
 
+% Reset other parameters that depend on previously defined parameters
+% setDepParams(led);
+setDepParams(led_controls);
+
 % Set initial values for crop
-led.x.cLeaf.val = 0.7*6240*10;
-led.x.cStem.val = 0.25*6240*10;
-led.x.cFruit.val = 0.05*6240*10;
+% led.x.cLeaf.val = 0.7*6240*10;
+% led.x.cStem.val = 0.25*6240*10;
+% led.x.cFruit.val = 0.05*6240*10;
+% 
+% % Set initial values for crop
+% led_controls.x.cLeaf.val = 0.7*6240*10;
+% led_controls.x.cStem.val = 0.25*6240*10;
+% led_controls.x.cFruit.val = 0.05*6240*10;
 
 %% Run simulation
 solveFromFile(led, 'ode15s');
+solveFromFile(led_controls, 'ode15s');
 
 % set data to a fixed step size (5 minutes)
 led = changeRes(led, 300);
+led_controls = changeRes(led_controls, 300);
 
 toc;
 %% Plot some outputs 
@@ -93,6 +107,7 @@ toc;
 figure(1)
 plot(led.x.tAir,'LineWidth',1.5)
 hold on
+plot(led_controls.x.tAir,'LineWidth',1.5)
 plot(led.d.tOut,'LineWidth',1.5)
 hold off
 
@@ -121,12 +136,13 @@ xtickangle(45);
 ylabel('Temperature (°C)')
 %xlabel('Date')
 xlabel('Time')
-legend('Indoor','Outdoor')
+legend('Indoor','Indoor-controls','Outdoor')
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)
 plot(led.a.rhIn,'LineWidth',1.5)
 hold on
+plot(led_controls.a.rhIn, 'LineWidth',1.5)
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
 hold off
 
@@ -155,12 +171,13 @@ xtickangle(45);
 % xlabel('Date')
 xlabel ('Time')
 ylabel('Relative humidity (%)')
-legend('Indoor','Outdoor')
+legend('Indoor', 'Indoor-controls','Outdoor')
 
 %% Figure 3 CO2 IN PPM
 figure(3)
 plot(led.a.co2InPpm,'LineWidth',1.5)
 hold on
+plot(led_controls.a.co2InPpm,'LineWidth',1.5)
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
 hold off
 
@@ -188,9 +205,7 @@ xtickangle(45);
 % Add other plot elements
 ylabel('CO2 concentration (ppm)')
 xlabel('time')
-legend('Indoor','Outdoor')
-
-
+legend('Indoor', 'Indoor-controls','Outdoor')
 
 % 
 % numticks = get(gca,'XTick');
@@ -241,7 +256,7 @@ legend('Indoor','Outdoor')
 % datestrings = datestr(dateticks,dateFormat);
 % xticklabels(datestrings);
 
-%% Artificial Weather dataset
+% Artificial Weather dataset
 function weather = weatherDataset(length)
 % make an artificial dataset to use as input for a createGreenLightModel
 %   length  - length of desired dataset (days)
@@ -268,7 +283,7 @@ function weather = weatherDataset(length)
     weather(:,6) = 0;
     weather(:,7) = weather(:,3) - 20;
     weather(:,8) = 20*ones(length*288,1);
-    
+
     % convert timestamps to datenum
     weather(:,1) = time/86400+1;
     weather(:,9) = dayLightSum(weather(:,1), weather(:,2));
