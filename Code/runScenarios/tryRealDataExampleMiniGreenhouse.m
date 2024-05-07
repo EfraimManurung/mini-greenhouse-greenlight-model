@@ -72,15 +72,16 @@ setMiniGreenhouseLedParams(led_controls);   % set lamp params
 
 %% Control parameters
 setParam(led, 'rhMax', 87);        % upper bound on relative humidity  
-setParam(led, 'lampsOn', 12);                     % Time of day when lamps go on                                                                  [hour]                                  0
-setParam(led, 'lampsOff', 12);                   % Time of day when lamps go off
+% setParam(led, 'lampsOn', 12);                     % Time of day when lamps go on                                                                  [hour]                                  0
+% setParam(led, 'lampsOff', 12);                   % Time of day when lamps go off
 %setParam(led_controls, 'rhMax', 30);        % upper bound on relative humidity   
 
 % setParam(led, 'thetaLampMax', 33.33);   %OK  % Maximum intensity of lamps
 
 % Reset other parameters that depend on previously defined parameters
+% Don't need it because already in the setParams
 % setDepParams(led);
-setDepParams(led_controls);
+% setDepParams(led_controls);
 
 % Set initial values for crop
 % led.x.cLeaf.val = 0.7*6240*10;
@@ -113,6 +114,7 @@ plot(led.x.tAir,'LineWidth',1.5)
 hold on
 plot(led_controls.x.tAir,'LineWidth',1.5)
 plot(led.d.tOut,'LineWidth',1.5)
+plot(led_controls.d.tOut,'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -140,7 +142,7 @@ xtickangle(45);
 ylabel('Temperature (°C)')
 %xlabel('Date')
 xlabel('Time')
-legend('Indoor','Indoor-controls','Outdoor')
+legend('Indoor','Indoor-controls','Outdoor','Outdoor-controls')
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)
@@ -148,6 +150,7 @@ plot(led.a.rhIn,'LineWidth',1.5)
 hold on
 plot(led_controls.a.rhIn, 'LineWidth',1.5)
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
+plot(100*vp2dens(led_controls.d.tOut,led_controls.d.vpOut)./rh2vaporDens(led_controls.d.tOut,100),'LineWidth',1.5);
 hold off
 
 % Get current x-axis ticks
@@ -175,7 +178,7 @@ xtickangle(45);
 % xlabel('Date')
 xlabel ('Time')
 ylabel('Relative humidity (%)')
-legend('Indoor', 'Indoor-controls','Outdoor')
+legend('Indoor', 'Indoor-controls','Outdoor', 'Outdoor-controls')
 
 %% Figure 3 CO2 IN PPM
 figure(3)
@@ -183,6 +186,7 @@ plot(led.a.co2InPpm,'LineWidth',1.5)
 hold on
 plot(led_controls.a.co2InPpm,'LineWidth',1.5)
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
+plot(co2dens2ppm(led_controls.d.tOut,1e-6*led_controls.d.co2Out),'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -209,7 +213,43 @@ xtickangle(45);
 % Add other plot elements
 ylabel('CO2 concentration (ppm)')
 xlabel('time')
-legend('Indoor', 'Indoor-controls','Outdoor')
+legend('Indoor', 'Indoor-controls','Outdoor', 'Outdoor-controls')
+
+
+%% Figure 4 PPFD
+figure(4)
+plot(led.p.parJtoUmolSun*led.a.rParGhSun)
+hold on
+plot(led_controls.p.parJtoUmolSun*led_controls.a.rParGhSun)
+plot(led.p.zetaLampPar*led.a.rParGhLamp)
+plot(led_controls.p.zetaLampPar*led_controls.a.rParGhLamp)
+hold off
+
+% Get current x-axis ticks
+numticks = get(gca,'XTick');
+
+% Convert timestamps to datenum format
+% divided by 86400
+dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
+
+% Format the date strings
+if seasonLength > 2
+    datestrings = datestr(dateticks, 'dd');
+else
+    datestrings = datestr(dateticks, 'HH:00');
+end
+
+% Set x-axis tick labels
+xticks(numticks);
+xticklabels(datestrings);
+
+% Rotate x-axis tick labels to avoid overlapping
+xtickangle(45);
+
+% Add other plot elements
+ylabel('umol (PAR) m^{-2} s^{-1}')
+xlabel('time')
+legend('PPFD from the sun','PPFD from the sun - controls', 'PPFD from the lamp', 'PPFD from the lamp - controls')
 
 % 
 % numticks = get(gca,'XTick');
@@ -315,8 +355,8 @@ function controls = controlsParameters(length)
     controls(:,2) = 0;                              % 'thScr' Energy screen closure 			0-1 (1 is fully closed)
     controls(:,3) = 0;                              % 'blScr' Black out screen closure			0-1 (1 is fully closed)
     controls(:,4) = 1;                              % 'roof'  Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
-    controls(:,5) = 5*sin(time*2*pi/86400)+25; %25;      % 'tPipe' Pipe rail temperature 			°C
-    controls(:,6) = 5*sin(time*2*pi/86400)+25; %25;      % 'tGroPipe' Grow pipes temperature 			°C
+    controls(:,5) = 0;                              % 'tPipe' Pipe rail temperature 			°C
+    controls(:,6) = 0;                              % 'tGroPipe' Grow pipes temperature 			°C
     controls(:,7) = 1;                              % 'lamp' Toplights on/off                  0/1 (1 is on)
     controls(:,8) = 0;                              % 'intLamp' Interlight on/off                 0/1 (1 is on)
     controls(:,9) = 0;                              % 'extCo2' CO2 injection   
