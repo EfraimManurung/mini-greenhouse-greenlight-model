@@ -114,7 +114,7 @@ plot(led.x.tAir,'LineWidth',1.5)
 hold on
 plot(led_controls.x.tAir,'LineWidth',1.5)
 plot(led.d.tOut,'LineWidth',1.5)
-plot(led_controls.d.tOut,'LineWidth',1.5)
+%plot(led_controls.d.tOut,'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -142,7 +142,7 @@ xtickangle(45);
 ylabel('Temperature (°C)')
 %xlabel('Date')
 xlabel('Time')
-legend('Indoor','Indoor-controls','Outdoor','Outdoor-controls')
+legend('Indoor','Indoor-controls','Outdoor')
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)
@@ -150,7 +150,7 @@ plot(led.a.rhIn,'LineWidth',1.5)
 hold on
 plot(led_controls.a.rhIn, 'LineWidth',1.5)
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
-plot(100*vp2dens(led_controls.d.tOut,led_controls.d.vpOut)./rh2vaporDens(led_controls.d.tOut,100),'LineWidth',1.5);
+%plot(100*vp2dens(led_controls.d.tOut,led_controls.d.vpOut)./rh2vaporDens(led_controls.d.tOut,100),'LineWidth',1.5);
 hold off
 
 % Get current x-axis ticks
@@ -178,7 +178,7 @@ xtickangle(45);
 % xlabel('Date')
 xlabel ('Time')
 ylabel('Relative humidity (%)')
-legend('Indoor', 'Indoor-controls','Outdoor', 'Outdoor-controls')
+legend('Indoor', 'Indoor-controls','Outdoor')
 
 %% Figure 3 CO2 IN PPM
 figure(3)
@@ -186,7 +186,7 @@ plot(led.a.co2InPpm,'LineWidth',1.5)
 hold on
 plot(led_controls.a.co2InPpm,'LineWidth',1.5)
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
-plot(co2dens2ppm(led_controls.d.tOut,1e-6*led_controls.d.co2Out),'LineWidth',1.5)
+%plot(co2dens2ppm(led_controls.d.tOut,1e-6*led_controls.d.co2Out),'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -213,16 +213,16 @@ xtickangle(45);
 % Add other plot elements
 ylabel('CO2 concentration (ppm)')
 xlabel('time')
-legend('Indoor', 'Indoor-controls','Outdoor', 'Outdoor-controls')
+legend('Indoor', 'Indoor-controls','Outdoor')
 
 
 %% Figure 4 PPFD
 figure(4)
-plot(led.p.parJtoUmolSun*led.a.rParGhSun)
+plot(led.p.parJtoUmolSun*led.a.rParGhSun,'LineWidth',1.5)
 hold on
-plot(led_controls.p.parJtoUmolSun*led_controls.a.rParGhSun)
-plot(led.p.zetaLampPar*led.a.rParGhLamp)
-plot(led_controls.p.zetaLampPar*led_controls.a.rParGhLamp)
+% plot(led_controls.p.parJtoUmolSun*led_controls.a.rParGhSun)
+plot(led.p.zetaLampPar*led.a.rParGhLamp,'LineWidth',1.5)
+plot(led_controls.p.zetaLampPar*led_controls.a.rParGhLamp,'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -249,7 +249,7 @@ xtickangle(45);
 % Add other plot elements
 ylabel('umol (PAR) m^{-2} s^{-1}')
 xlabel('time')
-legend('PPFD from the sun','PPFD from the sun - controls', 'PPFD from the lamp', 'PPFD from the lamp - controls')
+legend('PPFD from the sun','PPFD from the lamp', 'PPFD from the lamp - controls')
 
 % 
 % numticks = get(gca,'XTick');
