@@ -46,7 +46,11 @@ function setMiniGreenhouseLedParams(gl)
     setParam(gl, 'cHecLampAir', 2.3);      %OK  % heat exchange coefficient of lamp                                                             [W m^{-2} K^{-1}]                       
     setParam(gl, 'etaLampCool', 0.0);      %OK  % fraction of lamp input removed by cooling                                                     [-]                                     Estimate based on pg. 50 [1]
     setParam(gl, 'zetaLampPar', 5.4);      %OK  % J to umol conversion of PAR output of lamp                                                    [umol{PAR} J^{-1}]                      Efficacy of 1.6 umol/J [2], divided by 0.31 fraction to PAR (see above)
-
+    
+    %% Control Parameters
+    % setParam(gl, 'lampsOn', 0);               % Time of day when lamps go on
+    % setParam(gl, 'lampsOff', 18);             % Time of day when lamps go off
+    
     % Reset other parameters that may depend on parameters changed above
     setDepParams(gl);    
 end
