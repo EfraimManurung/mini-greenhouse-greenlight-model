@@ -27,10 +27,12 @@ function setMiniGreenhouseLedParams(gl)
 % Wageningen University
 % david.katzin@wur.nl
 % david.katzin1@gmail.com
-                                                % Parameter                                                                                     unit                    Value and reference
+                                                % Parameter                                                                                     unit                                    Value and reference
     %% Lamp parameters
     % LED
-    setParam(gl, 'thetaLampMax', 65.06);   %OK  % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
+    % setParam(gl, 'thetaLampMax', 65.06);   %OK  % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
+    % Measured  capacity divided by 0.83
+    setParam(gl, 'thetaLampMax', (16.95 * 0.83) / 3);
     setParam(gl, 'heatCorrection', 0);   	    % correction for temperature setpoint when lamps are on 										[C]   									0
     setParam(gl, 'etaLampPar', 0.55);      %OK  % fraction of lamp input converted to PAR 														[-]                                     [3] gives 0.33 with a lamp of 1.7 umol/J. This lamp is 1.6 umol/J [2], i.e. 6% less efficient as the one in [3]
     setParam(gl, 'etaLampNir', 0.02);      %OK  % fraction of lamp input converted to NIR 														[-]                                     [3]

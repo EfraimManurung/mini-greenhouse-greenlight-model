@@ -1,3 +1,6 @@
+
+
+
 function [weather, startTime] = loadMiniGreenhouseData(firstDay, seasonLength)
     SECONDS_IN_DAY = 24*60*60;
 
@@ -51,7 +54,7 @@ function [weather, startTime] = loadMiniGreenhouseData(firstDay, seasonLength)
     %       weather(:,9)    daily radiation sum [MJ m^{-2} day^{-1}]
 
     weather(:,1) = interval*(0:length(season(:,1))-1); % time
-    weather(:,2) = season(:,5); % lux
+    weather(:,2) = season(:,6); % rad
     weather(:,3) = season(:,3) + 1.5; % temperature
     weather(:,4) = rh2vaporDens(weather(:,3), season(:,4)); % humidity not in PPM
     weather(:,5) = co2ppm2dens(weather(:,3), season(:,2));

@@ -29,7 +29,7 @@ function setBleiswijk2010LedParams(gl)
                                                 % Parameter                                                                                     unit                    Value and reference
     %% Lamp parameters
     % LED
-    setParam(gl, 'thetaLampMax', 116);                  % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
+    setParam(gl, 'thetaLampMax', 116);              % Maximum intensity of lamps																	[W m^{-2}]                              Pg. 48 [1] (measured capacity divided by 144 m2)
     setParam(gl, 'heatCorrection', 0);   			% correction for temperature setpoint when lamps are on 										[C]   									0
     setParam(gl, 'etaLampPar', 0.31);               % fraction of lamp input converted to PAR 														[-]                                     [3] gives 0.33 with a lamp of 1.7 umol/J. This lamp is 1.6 umol/J [2], i.e. 6% less efficient as the one in [3]
     setParam(gl, 'etaLampNir', 0.02);               % fraction of lamp input converted to NIR 														[-]                                     [3]

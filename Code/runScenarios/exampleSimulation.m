@@ -3,10 +3,10 @@
 % David Katzin, Wageningen University
 % david.katzin@wur.nl
 % david.katzin1@gmail.com
-
+    
 tic;
 
-seasonLength = 10; % season length in days 
+seasonLength = 1; % season length in days 
 firstDay = 1; % days since beginning of data (01-01-2000)
 
 [weather, startTime] = loadSelYearHiRes(firstDay, seasonLength);
@@ -34,6 +34,7 @@ led = changeRes(led,300);
 ledCool = changeRes(ledCool,300);
 
 %% Plot
+
 plot(hps.x.tAir);
 hold on
 plot(hps.x.tLamp);
@@ -41,4 +42,5 @@ plot(led.x.tLamp);
 plot(ledCool.x.tLamp);
 title('Temperature (°C)');
 legend('Air', 'HPS', 'LED', 'LED cooling');
+
 toc;
