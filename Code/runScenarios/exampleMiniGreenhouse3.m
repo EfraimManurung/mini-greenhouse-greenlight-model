@@ -24,21 +24,17 @@ lampType = 'led'; % 'led', 'hps', or 'none'
 
 % DynamicElements for the measured data
 v.tAir = DynamicElement('v.tAir', [floor(indoor(:,1)) indoor(:,2)]);
-%v.vpAir = DynamicElement('v.vpAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.rhAir = DynamicElement('v.rhAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.co2Air = DynamicElement('v.co2Air', [floor(indoor(:,1)) indoor(:,4)]);
 
-secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
 % number of seconds since beginning of year to startTime
+secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
 
 %outdoor(:,7) = skyTempRdam(outdoor(:,3), datenum(startTime)+outdoor(:,1)/86400); % add sky temperature
 outdoor(:,7) = outdoor(:,3) - 10;
 outdoor(:,8) = soilTempNl(secsInYear+outdoor(:,1)); % add soil temperature
 
 %% Create an instance of createGreenLight with the default Vanthoor parameters
-% convert weather timestamps from datenum to seconds since beginning of data
-% startTime = datetime(outdoor(1,1),'ConvertFrom','datenum');
-
 % led = createGreenLightModel('led', outdoor, startTime, controls, indoor);
 led = createGreenLightModel(lampType, outdoor, startTime);
 led_controls = createGreenLightModel(lampType, outdoor, startTime,controls);
@@ -62,7 +58,7 @@ led.x.cLeaf.val = 0.7*6240;
 led.x.cStem.val = 0.25*6240;
 led.x.cFruit.val = 0.05*6240;
 
-% % Set initial values for crop
+% Set initial values for crop
 led_controls.x.cLeaf.val = 0.7*6240;
 led_controls.x.cStem.val = 0.25*6240;
 led_controls.x.cFruit.val = 0.05*6240;
@@ -86,49 +82,29 @@ simLength = length(led_controls.x.tAir.val(:,1)); % the length (array size) of t
 compareLength = min(mesLength, simLength);
 
 rrmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2));
-%rrmseVpair = sqrt(mean((led.x.vpAir.val(1:compareLength,2)-v.vpAir.val(1:compareLength,2)).^2))./mean(v.vpAir.val(1:compareLength,2));
 rrmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2));
 rrmseCo2air  = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2));
 
 rmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
-%rmseVpair = sqrt(mean((led.x.vpAir.val(1:compareLength,2) - v.vpAir.val(1:compareLength,2)).^2));
 rmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
 rmseCo2air = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
 
 % Calculate ME 
 meTair = mean(led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
-%meVpair = mean(led.x.vpAir.val(1:compareLength,2) - v.vpAir.val(1:compareLength,2));
 meRhair = mean(led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 
 disp('rrmseTair [%]'); disp(rrmseTair);
-%disp('rrmseVpair [%]'); disp(rrmseVpair);
 disp('rrmseRhair[%]'); disp(rrmseRhair);
 disp('rrmseCo2air [%]'); disp(rrmseCo2air);
 
 disp('rmseTair [°C]'); disp(rmseTair);
-%disp('rmseVpair [kg m^{-3}]'); disp(rmseVpair);
 disp('rmseRhair [%]'); disp(rmseRhair);
 disp('rmseCo2air [ppm]'); disp(rmseCo2air);
 
 disp('meTair [°C]'); disp(meTair);
-%disp('meVpair [kg m^{-3}]'); disp(meVpair);
 disp('meRhair[%]'); disp(meRhair);
 disp('meCo2air [ppm]'); disp(meCo2air);
-
-% disp(v.tAir.val(:,2));
-
-% Check the sizes of led.x.tAir and indoor(:,2)
-% size_led = size(led_controls.x.tAir);
-% size_indoor = size(indoor(:,2));
-% disp(size_led);
-% disp(size_indoor);
-% 
-% % Calculate RMSE
-% rmseTair = sqrt(mean((led_controls.x.tAir - indoor(:,2)).^2));
-% disp('rrmseTair');
-% disp(rrmseTair);
-
 
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
@@ -144,137 +120,59 @@ plot(led_controls.x.tAir,'LineWidth',1.5)
 plot(v.tAir.val(:,1), v.tAir.val(:,2),'LineWidth',1.5)
 plot(led_controls.d.tOut,'LineWidth',1.5)
 hold off
-
-% Get current x-axis ticks
-numticks = get(gca,'XTick');
-
-% Convert timestamps to datenum format
-% divided by 86400
-dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
-
-% Format the date strings
-if seasonLength > 2
-    datestrings = datestr(dateticks, 'dd');
-else
-    datestrings = datestr(dateticks, 'HH:00');
-end
-
-% Set x-axis tick labels
-xticks(numticks);
-xticklabels(datestrings);
-
-% Rotate x-axis tick labels to avoid overlapping
-xtickangle(45);
-
-% Add other plot elements
-ylabel('Temperature (°C)')
-%xlabel('Date')
 xlabel('Time')
+ylabel('Temperature (°C)')
 legend('Indoor','Indoor-controls','Indoor-real measurements','Outdoor')
+setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)
 plot(led.a.rhIn,'LineWidth',1.5)
 hold on
 plot(led_controls.a.rhIn, 'LineWidth',1.5)
+plot(v.rhAir.val(:,1), v.rhAir.val(:,2),'LineWidth',1.5)
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
-%plot(100*vp2dens(led_controls.d.tOut,led_controls.d.vpOut)./rh2vaporDens(led_controls.d.tOut,100),'LineWidth',1.5);
 hold off
-
-% Get current x-axis ticks
-numticks = get(gca,'XTick');
-
-% Convert timestamps to datenum format
-% divided by 86400
-dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
-
-% Format the date strings
-if seasonLength > 2
-    datestrings = datestr(dateticks, 'dd');
-else
-    datestrings = datestr(dateticks, 'HH:00');
-end
-
-% Set x-axis tick labels
-xticks(numticks);
-xticklabels(datestrings);
-
-% Rotate x-axis tick labels to avoid overlapping
-xtickangle(45);
-
-% Add other plot elements
-% xlabel('Date')
-xlabel ('Time')
+xlabel('Time')
 ylabel('Relative humidity (%)')
-legend('Indoor', 'Indoor-controls','Outdoor')
+legend('Indoor', 'Indoor-controls','Indoor-real measurements','Outdoor')
+setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 3 CO2 IN PPM
 figure(3)
 plot(led.a.co2InPpm,'LineWidth',1.5)
 hold on
 plot(led_controls.a.co2InPpm,'LineWidth',1.5)
+plot(v.co2Air.val(:,1), v.co2Air.val(:,2),'LineWidth',1.5)
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
-%plot(co2dens2ppm(led_controls.d.tOut,1e-6*led_controls.d.co2Out),'LineWidth',1.5)
 hold off
-
-% Get current x-axis ticks
-numticks = get(gca,'XTick');
-
-% Convert timestamps to datenum format
-% divided by 86400
-dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
-
-% Format the date strings
-if seasonLength > 2
-    datestrings = datestr(dateticks, 'dd');
-else
-    datestrings = datestr(dateticks, 'HH:00');
-end
-
-% Set x-axis tick labels
-xticks(numticks);
-xticklabels(datestrings);
-
-% Rotate x-axis tick labels to avoid overlapping
-xtickangle(45);
-
-% Add other plot elements
+xlabel('Time')
 ylabel('CO2 concentration (ppm)')
-xlabel('time')
-legend('Indoor', 'Indoor-controls','Outdoor')
-
+legend('Indoor', 'Indoor-controls','Indoor-real measurements','Outdoor')
+setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 4 PPFD
 figure(4)
-plot(led.p.parJtoUmolSun*led.a.rParGhSun,'LineWidth',1.5)
+plot(led.p.parJtoUmolSun * led.a.rParGhSun,'LineWidth',1.5)
 hold on
-% plot(led_controls.p.parJtoUmolSun*led_controls.a.rParGhSun)
-plot(led.p.zetaLampPar*led.a.rParGhLamp,'LineWidth',1.5)
-plot(led_controls.p.zetaLampPar*led_controls.a.rParGhLamp,'LineWidth',1.5)
+plot(led.p.zetaLampPar * led.a.rParGhLamp,'LineWidth',1.5)
+plot(led_controls.p.zetaLampPar * led_controls.a.rParGhLamp,'LineWidth',1.5)
 hold off
-
-% Get current x-axis ticks
-numticks = get(gca,'XTick');
-
-% Convert timestamps to datenum format
-% divided by 86400
-dateticks = datenum(datenum(led.t.label) + numticks / (60*60*24)); % Assuming timestamps are in seconds
-
-% Format the date strings
-if seasonLength > 2
-    datestrings = datestr(dateticks, 'dd');
-else
-    datestrings = datestr(dateticks, 'HH:00');
-end
-
-% Set x-axis tick labels
-xticks(numticks);
-xticklabels(datestrings);
-
-% Rotate x-axis tick labels to avoid overlapping
-xtickangle(45);
-
-% Add other plot elements
+xlabel('Time')
 ylabel('umol (PAR) m^{-2} s^{-1}')
-xlabel('time')
-legend('PPFD from the sun','PPFD from the lamp', 'PPFD from the lamp - controls')
+legend('PPFD from the sun', 'PPFD from the lamp', 'PPFD from the lamp - controls')
+setXAxisTicksAndLabels(led.t.label, seasonLength)
+
+%% FUnction for the figures
+function setXAxisTicksAndLabels(timeLabels, seasonLength)
+    numTicks = get(gca,'XTick');
+    dateticks = datenum(datenum(timeLabels) + numTicks / (60*60*24)); % Assuming timestamps are in seconds
+    if seasonLength > 2
+        datestrings = datestr(dateticks, 'dd');
+    else
+        datestrings = datestr(dateticks, 'HH:00');
+    end
+    xticks(numTicks);
+    xticklabels(datestrings);
+    xtickangle(45);
+end

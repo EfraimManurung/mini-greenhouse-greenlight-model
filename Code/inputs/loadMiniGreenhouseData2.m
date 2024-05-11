@@ -9,7 +9,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 % "GreenLight - An Open Source Model for Greenhouses with Supplemental Lighting: Evaluation of Heat Requirements under LED and HPS Lamps.” 
 % Biosystems Engineering 194: 61–81. https://doi.org/10.1016/j.biosystemseng.2020.03.010
 % 
-% 
 % Usage:
 %   [outdoor, indoor, contorls, startTime] = loadGreenhouseData(firstDay, seasonLength, type)
 % The dataset contain a table in the following format:
@@ -82,7 +81,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     endPoint = startPoint-1+round(seasonLength*SECONDS_IN_DAY/interval);
 
     % calculate date and time of first data point
-    % startTime = datetime(2000,1,1,0,0,0)+minigreenhouse(startPoint,1)/SECONDS_IN_DAY;
     startTime = datetime(minigreenhouse(1,1),'ConvertFrom','datenum');
 
     dataLength = length(minigreenhouse(:,1));
@@ -121,7 +119,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     outdoor(:,3) = season(:,5);
     outdoor(:,4) = rh2vaporDens(outdoor(:,3), season(:,7)); % Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
     % outdoor(:,5) = co2ppm2dens(outdoor(:,3), season(:,9)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
-    outdoor(:,5) = co2ppm2dens(outdoor(:,3), CO2_PPM);
+    outdoor(:,5) = co2ppm2dens(outdoor(:,3), CO2_PPM);  % Using constant CO2_PPM for the outdoor
     outdoor(:,6) = 0;
 
     %% INDOOR
@@ -130,23 +128,11 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %   indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
     %   indoor(:,2)     temperature       [°C]             indoor air temperature
     %   indoor(:,3)     humidity    [%] RH        
-    %   indoor(:,3)     humidity    [kg m^{-3}]            indoor vapor concentration
-    %      indoor(:,3)     vapor pressure    [Pa]             indoor vapor concentration
-    %      indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
     %   indoor(:,4)     co2         [ppm]                  indoor co2 concentration
+
     indoor(:,1) = outdoor(:,1);
     indoor(:,2) = season(:,4);
-
-    % Convert process from
-    % RH2VAPORDENS Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
-    
-    % % VAPORDENS2PRES Convert vapor density [kg{H2O} m^{-3}] to vapor pressure [Pa]
-    % vaporConverter(:,1) = rh2vaporDens(indoor(:,2), season(:,6));
-    % indoor(:,3) = vaporDens2pres(indoor(:,2), vaporConverter(:,1));
-
-    %indoor(:,3) = rh2vaporDens(indoor(:,2), season(:,6));
     indoor(:,3) = season(:,6);
-    % indoor(:,4) = 1e6*co2ppm2dens(indoor(:,2), season(:,8)); % convert co2 from ppm to mg m^{-3}
     indoor(:,4) = season(:,8);
 
     %% CONTROL
