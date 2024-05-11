@@ -116,7 +116,8 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 
     outdoor(:,1) = interval*(0:length(season(:,1))-1); % time
     outdoor(:,2) = season(:,2); 
-    outdoor(:,3) = season(:,5);
+    %outdoor(:,3) = season(:,5); % without adding temperature by 1.5
+    outdoor(:,3) = season(:,5)+1.5; % air temperature % INCREASE OF TEMPERATURE BY 1.5
     outdoor(:,4) = rh2vaporDens(outdoor(:,3), season(:,7)); % Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
     % outdoor(:,5) = co2ppm2dens(outdoor(:,3), season(:,9)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
     outdoor(:,5) = co2ppm2dens(outdoor(:,3), CO2_PPM);  % Using constant CO2_PPM for the outdoor

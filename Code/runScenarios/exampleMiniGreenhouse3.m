@@ -18,7 +18,7 @@ seasonLength = 1; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
-lampType = 'led'; % 'led', 'hps', or 'none'
+lampType = 'led'; 
 
 [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstDay, seasonLength);
 
@@ -36,19 +36,14 @@ outdoor(:,8) = soilTempNl(secsInYear+outdoor(:,1)); % add soil temperature
 
 %% Create an instance of createGreenLight with the default Vanthoor parameters
 % led = createGreenLightModel('led', outdoor, startTime, controls, indoor);
-led = createGreenLightModel(lampType, outdoor, startTime);
-led_controls = createGreenLightModel(lampType, outdoor, startTime,controls);
+led = createGreenLightModel(lampType, outdoor, startTime, controls);
 
 % Parameters for mini-greenhouse
 setParamsMiniGreenhouse(led);      % set greenhouse structure
 setMiniGreenhouseLedParams(led);   % set lamp params
-
-setParamsMiniGreenhouse(led_controls);      % set greenhouse structure
-setMiniGreenhouseLedParams(led_controls);   % set lamp params
 %% Control parameters
 % Read setGIParams.m about the explanation and default values of the control parameters
 % setParam(led, 'rhMax', 87);        % upper bound on relative humidity  
-% setParam(led_controls, 'rhMax', 87);        % upper bound on relative humidity  
 
 % Set initial values for crop
 % start with 3.12 plants/m2, assume they are each 2 g = 6240 mg/m2.
@@ -58,41 +53,33 @@ led.x.cLeaf.val = 0.7*6240;
 led.x.cStem.val = 0.25*6240;
 led.x.cFruit.val = 0.05*6240;
 
-% Set initial values for crop
-led_controls.x.cLeaf.val = 0.7*6240;
-led_controls.x.cStem.val = 0.25*6240;
-led_controls.x.cFruit.val = 0.05*6240;
-
 %% Run simulation
 solveFromFile(led, 'ode15s');
-solveFromFile(led_controls, 'ode15s');
 
 % set data to a fixed step size (5 minutes)
 led = changeRes(led, 300);
-led_controls = changeRes(led_controls, 300);
 
 toc;
-
 %% Get RRMSEs between simulation and measurements
 % Check that the measured data and the simulations have the same size. 
 % If one of them is bigger, some data points of the longer dataset will be
 % discarded
 mesLength = length(v.tAir.val(:,1)); % the length (array size) of the measurement data
-simLength = length(led_controls.x.tAir.val(:,1)); % the length (array size) of the simulated data
+simLength = length(led.x.tAir.val(:,1)); % the length (array size) of the simulated data
 compareLength = min(mesLength, simLength);
 
-rrmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2));
-rrmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2));
-rrmseCo2air  = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2));
+rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
+rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
+rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2))) * 100;
 
-rmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
-rmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
-rmseCo2air = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
+rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
+rmseRhair = sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
+rmseCo2air = sqrt(mean((led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
 
 % Calculate ME 
-meTair = mean(led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
-meRhair = mean(led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2));
-meCo2air = mean(led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
+meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
+meRhair = mean(led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2));
+meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 
 disp('rrmseTair [%]'); disp(rrmseTair);
 disp('rrmseRhair[%]'); disp(rrmseRhair);
@@ -116,39 +103,36 @@ disp('meCo2air [ppm]'); disp(meCo2air);
 figure(1)
 plot(led.x.tAir,'LineWidth',1.5)
 hold on
-plot(led_controls.x.tAir,'LineWidth',1.5)
 plot(v.tAir.val(:,1), v.tAir.val(:,2),'LineWidth',1.5)
-plot(led_controls.d.tOut,'LineWidth',1.5)
+plot(led.d.tOut,'LineWidth',1.5)
 hold off
 xlabel('Time')
 ylabel('Temperature (°C)')
-legend('Indoor','Indoor-controls','Indoor-real measurements','Outdoor')
+legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)
 plot(led.a.rhIn,'LineWidth',1.5)
 hold on
-plot(led_controls.a.rhIn, 'LineWidth',1.5)
 plot(v.rhAir.val(:,1), v.rhAir.val(:,2),'LineWidth',1.5)
 plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
 hold off
 xlabel('Time')
 ylabel('Relative humidity (%)')
-legend('Indoor', 'Indoor-controls','Indoor-real measurements','Outdoor')
+legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 3 CO2 IN PPM
 figure(3)
 plot(led.a.co2InPpm,'LineWidth',1.5)
 hold on
-plot(led_controls.a.co2InPpm,'LineWidth',1.5)
 plot(v.co2Air.val(:,1), v.co2Air.val(:,2),'LineWidth',1.5)
 plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
 hold off
 xlabel('Time')
 ylabel('CO2 concentration (ppm)')
-legend('Indoor', 'Indoor-controls','Indoor-real measurements','Outdoor')
+legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 4 PPFD
@@ -156,11 +140,10 @@ figure(4)
 plot(led.p.parJtoUmolSun * led.a.rParGhSun,'LineWidth',1.5)
 hold on
 plot(led.p.zetaLampPar * led.a.rParGhLamp,'LineWidth',1.5)
-plot(led_controls.p.zetaLampPar * led_controls.a.rParGhLamp,'LineWidth',1.5)
 hold off
 xlabel('Time')
 ylabel('umol (PAR) m^{-2} s^{-1}')
-legend('PPFD from the sun', 'PPFD from the lamp', 'PPFD from the lamp - controls')
+legend('PPFD from the sun', 'PPFD from the lamp')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% FUnction for the figures
