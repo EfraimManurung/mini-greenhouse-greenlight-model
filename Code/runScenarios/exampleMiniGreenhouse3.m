@@ -25,21 +25,23 @@ lampType = 'led'; % 'led', 'hps', or 'none'
 % DynamicElements for the measured data
 v.tAir = DynamicElement('v.tAir', [floor(indoor(:,1)) indoor(:,2)]);
 %v.vpAir = DynamicElement('v.vpAir', [floor(indoor(:,1)) indoor(:,3)]);
+v.rhAir = DynamicElement('v.rhAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.co2Air = DynamicElement('v.co2Air', [floor(indoor(:,1)) indoor(:,4)]);
 
 secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
 % number of seconds since beginning of year to startTime
 
-outdoor(:,7) = skyTempRdam(outdoor(:,3), datenum(startTime)+outdoor(:,1)/86400); % add sky temperature
-outdoor(:,8) = soilTempNl(secsInYear+weather(:,1)); % add soil temperature
+%outdoor(:,7) = skyTempRdam(outdoor(:,3), datenum(startTime)+outdoor(:,1)/86400); % add sky temperature
+outdoor(:,7) = outdoor(:,3) - 10;
+outdoor(:,8) = soilTempNl(secsInYear+outdoor(:,1)); % add soil temperature
 
 %% Create an instance of createGreenLight with the default Vanthoor parameters
 % convert weather timestamps from datenum to seconds since beginning of data
-% startTime = datetime(weather(1,1),'ConvertFrom','datenum');
+% startTime = datetime(outdoor(1,1),'ConvertFrom','datenum');
 
-% led = createGreenLightModel('led', weather, startTime, controls, indoor);
-led = createGreenLightModel(lampType, weather, startTime);
-led_controls = createGreenLightModel(lampType, weather, startTime,controls);
+% led = createGreenLightModel('led', outdoor, startTime, controls, indoor);
+led = createGreenLightModel(lampType, outdoor, startTime);
+led_controls = createGreenLightModel(lampType, outdoor, startTime,controls);
 
 % Parameters for mini-greenhouse
 setParamsMiniGreenhouse(led);      % set greenhouse structure
@@ -49,7 +51,8 @@ setParamsMiniGreenhouse(led_controls);      % set greenhouse structure
 setMiniGreenhouseLedParams(led_controls);   % set lamp params
 %% Control parameters
 % Read setGIParams.m about the explanation and default values of the control parameters
-% setParam(led, 'rhMax', 60);        % upper bound on relative humidity  
+% setParam(led, 'rhMax', 87);        % upper bound on relative humidity  
+% setParam(led_controls, 'rhMax', 87);        % upper bound on relative humidity  
 
 % Set initial values for crop
 % start with 3.12 plants/m2, assume they are each 2 g = 6240 mg/m2.
@@ -84,7 +87,47 @@ compareLength = min(mesLength, simLength);
 
 rrmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2));
 %rrmseVpair = sqrt(mean((led.x.vpAir.val(1:compareLength,2)-v.vpAir.val(1:compareLength,2)).^2))./mean(v.vpAir.val(1:compareLength,2));
+rrmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2));
 rrmseCo2air  = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2));
+
+rmseTair = sqrt(mean((led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
+%rmseVpair = sqrt(mean((led.x.vpAir.val(1:compareLength,2) - v.vpAir.val(1:compareLength,2)).^2));
+rmseRhair = sqrt(mean((led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
+rmseCo2air = sqrt(mean((led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
+
+% Calculate ME 
+meTair = mean(led_controls.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
+%meVpair = mean(led.x.vpAir.val(1:compareLength,2) - v.vpAir.val(1:compareLength,2));
+meRhair = mean(led_controls.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2));
+meCo2air = mean(led_controls.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
+
+disp('rrmseTair [%]'); disp(rrmseTair);
+%disp('rrmseVpair [%]'); disp(rrmseVpair);
+disp('rrmseRhair[%]'); disp(rrmseRhair);
+disp('rrmseCo2air [%]'); disp(rrmseCo2air);
+
+disp('rmseTair [°C]'); disp(rmseTair);
+%disp('rmseVpair [kg m^{-3}]'); disp(rmseVpair);
+disp('rmseRhair [%]'); disp(rmseRhair);
+disp('rmseCo2air [ppm]'); disp(rmseCo2air);
+
+disp('meTair [°C]'); disp(meTair);
+%disp('meVpair [kg m^{-3}]'); disp(meVpair);
+disp('meRhair[%]'); disp(meRhair);
+disp('meCo2air [ppm]'); disp(meCo2air);
+
+% disp(v.tAir.val(:,2));
+
+% Check the sizes of led.x.tAir and indoor(:,2)
+% size_led = size(led_controls.x.tAir);
+% size_indoor = size(indoor(:,2));
+% disp(size_led);
+% disp(size_indoor);
+% 
+% % Calculate RMSE
+% rmseTair = sqrt(mean((led_controls.x.tAir - indoor(:,2)).^2));
+% disp('rrmseTair');
+% disp(rrmseTair);
 
 
 %% Plot some outputs 
@@ -98,8 +141,8 @@ figure(1)
 plot(led.x.tAir,'LineWidth',1.5)
 hold on
 plot(led_controls.x.tAir,'LineWidth',1.5)
-plot(led.d.tOut,'LineWidth',1.5)
-%plot(led_controls.d.tOut,'LineWidth',1.5)
+plot(v.tAir.val(:,1), v.tAir.val(:,2),'LineWidth',1.5)
+plot(led_controls.d.tOut,'LineWidth',1.5)
 hold off
 
 % Get current x-axis ticks
@@ -127,7 +170,7 @@ xtickangle(45);
 ylabel('Temperature (°C)')
 %xlabel('Date')
 xlabel('Time')
-legend('Indoor','Indoor-controls','Outdoor')
+legend('Indoor','Indoor-controls','Indoor-real measurements','Outdoor')
 
 %% Figure 2 RELATIVE HUMIDITY
 figure(2)

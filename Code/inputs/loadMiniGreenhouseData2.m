@@ -20,7 +20,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 % 4 		Temp in 							°C
 % 5         Temp out                            °C
 % 6 		Relative humidity in 				%	
-% 7         Relatve humidity out                %
+% 7         Relative humidity out               %
 % 8         CO2 in                              ppm
 % 9         CO2 out                             ppm
 % 10        Toplights on/off                    0/1 (1 is on)
@@ -60,14 +60,16 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 %       indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
 
     SECONDS_IN_DAY = 24*60*60;
-    
+
+    CO2_PPM = 400; % assumed constant value of CO2 ppm
+   
     %% load file
     currentFile = mfilename('fullpath');
     currentFolder = fileparts(currentFile);
     
-    path = [currentFolder '\minigreenhouse_3.mat'];
+    path = [currentFolder '\dataset3.mat'];
       %% load hi res 
-    minigreenhouse = load(path).datasetminigreenhouse;
+    minigreenhouse = load(path).dataset3;
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced
@@ -118,22 +120,35 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     outdoor(:,2) = season(:,2); 
     outdoor(:,3) = season(:,5);
     outdoor(:,4) = rh2vaporDens(outdoor(:,3), season(:,7)); % Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
-    outdoor(:,5) = co2ppm2dens(outdoor(:,3), season(:,7)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
+    % outdoor(:,5) = co2ppm2dens(outdoor(:,3), season(:,9)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
+    outdoor(:,5) = co2ppm2dens(outdoor(:,3), CO2_PPM);
     outdoor(:,6) = 0;
-    
 
     %% INDOOR
     % Indoor reformartted dataset
     %   indoor          (optional) A 3 column matrix with:
     %   indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
     %   indoor(:,2)     temperature       [°C]             indoor air temperature
-    %   indoor(:,3)     vapor pressure    [Pa]             indoor vapor concentration
-    %   indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
+    %   indoor(:,3)     humidity    [%] RH        
+    %   indoor(:,3)     humidity    [kg m^{-3}]            indoor vapor concentration
+    %      indoor(:,3)     vapor pressure    [Pa]             indoor vapor concentration
+    %      indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
+    %   indoor(:,4)     co2         [ppm]                  indoor co2 concentration
     indoor(:,1) = outdoor(:,1);
     indoor(:,2) = season(:,4);
-    indoor(:,3) = 0;
-    indoor(:,4) = 1e6*co2ppm2dens(indoor(:,2), season(:,9)); % convert co2 from ppm to mg m^{-3}
+
+    % Convert process from
+    % RH2VAPORDENS Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
     
+    % % VAPORDENS2PRES Convert vapor density [kg{H2O} m^{-3}] to vapor pressure [Pa]
+    % vaporConverter(:,1) = rh2vaporDens(indoor(:,2), season(:,6));
+    % indoor(:,3) = vaporDens2pres(indoor(:,2), vaporConverter(:,1));
+
+    %indoor(:,3) = rh2vaporDens(indoor(:,2), season(:,6));
+    indoor(:,3) = season(:,6);
+    % indoor(:,4) = 1e6*co2ppm2dens(indoor(:,2), season(:,8)); % convert co2 from ppm to mg m^{-3}
+    indoor(:,4) = season(:,8);
+
     %% CONTROL
     % Control reformartted dataset
     %   controls        (optional) A matrix with 8 columns, in the following format:
@@ -152,7 +167,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     controls(:,4) = season(:,11);
     controls(:,5) = indoor(:,2);        % pipe rail temperature with adjustment for air
     controls(:,6) = indoor(:,2);        % grow pipes temperature with adjustment for air
-    controls(:,7) = indoor(:,10);
+    controls(:,7) = season(:,10);
     controls(:,8) = 0;
     controls(:,9) = 0;
 
