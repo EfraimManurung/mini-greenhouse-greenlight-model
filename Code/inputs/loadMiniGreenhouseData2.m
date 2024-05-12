@@ -14,7 +14,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 % The dataset contain a table in the following format:
 % Column    Description                         Unit             
 % 1 		Time 								datenum 
-% 2 		Radiation global				    W m^{-2} outdoor global irradiation 
+% 2 		Radiation outside				    W m^{-2} outdoor global irradiation 
 % 3         Radiation inside                    W m^{-2}
 % 4 		Temp in 							°C
 % 5         Temp out                            °C
@@ -66,9 +66,9 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     currentFile = mfilename('fullpath');
     currentFolder = fileparts(currentFile);
     
-    path = [currentFolder '\dataset3.mat'];
+    path = [currentFolder '\dataset4.mat'];
       %% load hi res 
-    minigreenhouse = load(path).dataset3;
+    minigreenhouse = load(path).dataset4;
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced
@@ -79,6 +79,8 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     startPoint = 1+round((firstDay-1)*SECONDS_IN_DAY/interval);
         % index in the time array where data should start reading
     endPoint = startPoint-1+round(seasonLength*SECONDS_IN_DAY/interval);
+    
+    %inputData = inputData(startPoint:endPoint,:);
 
     % calculate date and time of first data point
     startTime = datetime(minigreenhouse(1,1),'ConvertFrom','datenum');
@@ -88,14 +90,14 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
         % number of times data crosses the new year
     
     if endPoint <= dataLength % required season passes over end of year
-        season = minigreenhouse(startPoint:endPoint,:);
+        inputData = minigreenhouse(startPoint:endPoint,:);
     else
-        season = minigreenhouse(startPoint:end,:);
+        inputData = minigreenhouse(startPoint:end,:);
         for n=1:newYears-1
-            season = [season; minigreenhouse];
+            inputData = [inputData; minigreenhouse];
         end
         endPoint = mod(endPoint, dataLength);
-        season = [season; minigreenhouse(1:endPoint,:)];
+        inputData = [inputData; minigreenhouse(1:endPoint,:)];
     end
     %% REFORMAT DATA
     % See the format of the dataset above
@@ -114,12 +116,12 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %       weather(:,8)    temperature of external soil layer [°C]
     %       weather(:,9)    daily radiation sum [MJ m^{-2} day^{-1}]
 
-    outdoor(:,1) = interval*(0:length(season(:,1))-1); % time
-    outdoor(:,2) = season(:,2); 
-    %outdoor(:,3) = season(:,5); % without adding temperature by 1.5
-    outdoor(:,3) = season(:,5)+1.5; % air temperature % INCREASE OF TEMPERATURE BY 1.5
-    outdoor(:,4) = rh2vaporDens(outdoor(:,3), season(:,7)); % Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
-    % outdoor(:,5) = co2ppm2dens(outdoor(:,3), season(:,9)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
+    outdoor(:,1) = interval*(0:length(inputData(:,1))-1); % time
+    outdoor(:,2) = inputData(:,2); 
+    %outdoor(:,3) = inputData(:,5); % without adding temperature by 1.5
+    outdoor(:,3) = inputData(:,5)+1.5; % air temperature % INCREASE OF TEMPERATURE BY 1.5
+    outdoor(:,4) = rh2vaporDens(outdoor(:,3), inputData(:,7)); % Convert relative humidity [%] to vapor density [kg{H2O} m^{-3}]
+    % outdoor(:,5) = co2ppm2dens(outdoor(:,3), inputData(:,9)); % Convert CO2 molar concetration [ppm] to density [kg m^{-3}]
     outdoor(:,5) = co2ppm2dens(outdoor(:,3), CO2_PPM);  % Using constant CO2_PPM for the outdoor
     outdoor(:,6) = 0;
 
@@ -132,9 +134,9 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %   indoor(:,4)     co2         [ppm]                  indoor co2 concentration
 
     indoor(:,1) = outdoor(:,1);
-    indoor(:,2) = season(:,4);
-    indoor(:,3) = season(:,6);
-    indoor(:,4) = season(:,8);
+    indoor(:,2) = inputData(:,4);
+    indoor(:,3) = inputData(:,6);
+    indoor(:,4) = inputData(:,8);
 
     %% CONTROL
     % Control reformartted dataset
@@ -151,10 +153,10 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     controls(:,1) = outdoor(:,1);
     controls(:,2) = 0;
     controls(:,3) = 0; 
-    controls(:,4) = season(:,11);
+    controls(:,4) = inputData(:,11);
     controls(:,5) = indoor(:,2);        % pipe rail temperature with adjustment for air
     controls(:,6) = indoor(:,2);        % grow pipes temperature with adjustment for air
-    controls(:,7) = season(:,10);
+    controls(:,7) = inputData(:,10);
     controls(:,8) = 0;
     controls(:,9) = 0;
 

@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 3; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -68,17 +68,19 @@ mesLength = length(v.tAir.val(:,1)); % the length (array size) of the measuremen
 simLength = length(led.x.tAir.val(:,1)); % the length (array size) of the simulated data
 compareLength = min(mesLength, simLength);
 
+% Calculate RRMSE
 rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
 rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2))) * 100;
 
+% Calculate RMSE
 rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
 rmseRhair = sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
 rmseCo2air = sqrt(mean((led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
 
 % Calculate ME 
 meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
-meRhair = mean(led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2));
+meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 
 disp('rrmseTair [%]'); disp(rrmseTair);
@@ -146,7 +148,7 @@ ylabel('umol (PAR) m^{-2} s^{-1}')
 legend('PPFD from the sun', 'PPFD from the lamp')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
-%% FUnction for the figures
+%% Function for the figures
 function setXAxisTicksAndLabels(timeLabels, seasonLength)
     numTicks = get(gca,'XTick');
     dateticks = datenum(datenum(timeLabels) + numTicks / (60*60*24)); % Assuming timestamps are in seconds
