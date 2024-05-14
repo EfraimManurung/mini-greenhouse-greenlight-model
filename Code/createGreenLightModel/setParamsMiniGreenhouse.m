@@ -23,7 +23,7 @@ function setParamsMiniGreenhouse(gl)
 % david.katzin@wur.nl
 % david.katzin1@gmail.com
                                                     % Parameter                                                                                     unit                    Value and reference
-                 
+    %setParam(gl, 'rhMax', 60);                      % Upper bound on relative humidity             
     setParam(gl, 'psi', 35.68); 		%OK	        % Mean greenhouse cover slope 																	� 						23 [4]
     setParam(gl, 'aFlr', 0.83);         %OK         % Floor area of greenhouse 																		m^{2} 					144 [1]
     setParam(gl, 'aCov', 3.43);         %OK         % Surface of the cover including side walls                                                     m^{2} 					216.6, taking into account only the parts of the that face the corridor or the outside air (not the neighbouring compartment) [4]

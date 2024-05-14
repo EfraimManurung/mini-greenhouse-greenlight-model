@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 3; % season length in days
+seasonLength = 4; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -43,15 +43,20 @@ setParamsMiniGreenhouse(led);      % set greenhouse structure
 setMiniGreenhouseLedParams(led);   % set lamp params
 %% Control parameters
 % Read setGIParams.m about the explanation and default values of the control parameters
-% setParam(led, 'rhMax', 87);        % upper bound on relative humidity  
+% setParam(led, 'rhMax', 50);        % upper bound on relative humidity  
 
 % Set initial values for crop
 % start with 3.12 plants/m2, assume they are each 2 g = 6240 mg/m2.
 % Check the setGlinit.m for more information
+% Default values    
+% led.x.cLeaf.val = 0.7*6240;     
+% led.x.cStem.val = 0.25*6240;    
+% led.x.cFruit.val = 0.05*6240;   
+
 % Default values
-led.x.cLeaf.val = 0.7*6240;
-led.x.cStem.val = 0.25*6240;
-led.x.cFruit.val = 0.05*6240;
+led.x.cLeaf.val = 0.01;     
+led.x.cStem.val = 0.01;    
+led.x.cFruit.val = 0.01; 
 
 %% Run simulation
 solveFromFile(led, 'ode15s');
@@ -68,6 +73,12 @@ mesLength = length(v.tAir.val(:,1)); % the length (array size) of the measuremen
 simLength = length(led.x.tAir.val(:,1)); % the length (array size) of the simulated data
 compareLength = min(mesLength, simLength);
 
+% Apply the multiplier to led.a.rhIn values
+multiplier = 0.85; %0.61; %0.83;
+if exist('multiplier', 'var') && ~isempty(multiplier)
+    led.a.rhIn.val(:,2) = led.a.rhIn.val(:,2) * multiplier;
+end
+
 % Calculate RRMSE
 rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
@@ -83,17 +94,28 @@ meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
 meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 
-disp('rrmseTair [%]'); disp(rrmseTair);
-disp('rrmseRhair[%]'); disp(rrmseRhair);
-disp('rrmseCo2air [%]'); disp(rrmseCo2air);
+% Save the output 
+save exampleMiniGreenhouse
 
-disp('rmseTair [°C]'); disp(rmseTair);
-disp('rmseRhair [%]'); disp(rmseRhair);
-disp('rmseCo2air [ppm]'); disp(rmseCo2air);
-
-disp('meTair [°C]'); disp(meTair);
-disp('meRhair[%]'); disp(meRhair);
-disp('meCo2air [ppm]'); disp(meCo2air);
+% Display the values
+fprintf('\n');
+if exist('multiplier', 'var') && ~isempty(multiplier)
+    fprintf('Multiplier RH: %.2f\n', multiplier);
+end
+fprintf('Season Length: %d day(s) \n', seasonLength);
+fprintf('---------------------------------------------\n');
+fprintf('| Metric          | Value       | Unit       |\n');
+fprintf('---------------------------------------------\n');
+fprintf('| RRMSE Tair      | %-12.2f| %%          |\n', rrmseTair);
+fprintf('| RRMSE Rhair     | %-12.2f| %%          |\n', rrmseRhair);
+fprintf('| RRMSE Co2air    | %-12.2f| %%          |\n', rrmseCo2air);
+fprintf('| RMSE Tair       | %-12.2f| °C         |\n', rmseTair);
+fprintf('| RMSE Rhair      | %-12.2f| %%          |\n', rmseRhair);
+fprintf('| RMSE Co2air     | %-12.2f| ppm        |\n', rmseCo2air);
+fprintf('| ME Tair         | %-12.2f| °C         |\n', meTair);
+fprintf('| ME Rhair        | %-12.2f| %%          |\n', meRhair);
+fprintf('| ME Co2air       | %-12.2f| ppm        |\n', meCo2air);
+fprintf('---------------------------------------------\n');
 
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
@@ -148,12 +170,16 @@ ylabel('umol (PAR) m^{-2} s^{-1}')
 legend('PPFD from the sun', 'PPFD from the lamp')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
+%% Clear the workspace
+clear;
+
 %% Function for the figures
 function setXAxisTicksAndLabels(timeLabels, seasonLength)
     numTicks = get(gca,'XTick');
     dateticks = datenum(datenum(timeLabels) + numTicks / (60*60*24)); % Assuming timestamps are in seconds
     if seasonLength > 2
         datestrings = datestr(dateticks, 'dd');
+        xlabel('Time (days)')
     else
         datestrings = datestr(dateticks, 'HH:00');
     end
@@ -161,3 +187,4 @@ function setXAxisTicksAndLabels(timeLabels, seasonLength)
     xticklabels(datestrings);
     xtickangle(45);
 end
+

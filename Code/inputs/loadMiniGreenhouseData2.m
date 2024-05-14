@@ -66,9 +66,9 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     currentFile = mfilename('fullpath');
     currentFolder = fileparts(currentFile);
     
-    path = [currentFolder '\dataset4.mat'];
+    path = [currentFolder '\dataset5.mat'];
       %% load hi res 
-    minigreenhouse = load(path).dataset4;
+    minigreenhouse = load(path).dataset5;
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced
