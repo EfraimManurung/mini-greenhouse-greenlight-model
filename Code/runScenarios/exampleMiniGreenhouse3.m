@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 4; % season length in days
+seasonLength = 1; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -26,6 +26,7 @@ lampType = 'led';
 v.tAir = DynamicElement('v.tAir', [floor(indoor(:,1)) indoor(:,2)]);
 v.rhAir = DynamicElement('v.rhAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.co2Air = DynamicElement('v.co2Air', [floor(indoor(:,1)) indoor(:,4)]);
+v.iInside = DynamicElement('v.iInside', [floor(indoor(:,1)) indoor(:,5)]);
 
 % number of seconds since beginning of year to startTime
 secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
@@ -49,14 +50,14 @@ setMiniGreenhouseLedParams(led);   % set lamp params
 % start with 3.12 plants/m2, assume they are each 2 g = 6240 mg/m2.
 % Check the setGlinit.m for more information
 % Default values    
-% led.x.cLeaf.val = 0.7*6240;     
-% led.x.cStem.val = 0.25*6240;    
-% led.x.cFruit.val = 0.05*6240;   
+led.x.cLeaf.val = 0.7*6240;     
+led.x.cStem.val = 0.25*6240;    
+led.x.cFruit.val = 0.05*6240;   
 
 % Default values
-led.x.cLeaf.val = 0.01;     
-led.x.cStem.val = 0.01;    
-led.x.cFruit.val = 0.01; 
+% led.x.cLeaf.val = 0.01;     
+% led.x.cStem.val = 0.01;    
+% led.x.cFruit.val = 0.01; 
 
 %% Run simulation
 solveFromFile(led, 'ode15s');
@@ -74,25 +75,31 @@ simLength = length(led.x.tAir.val(:,1)); % the length (array size) of the simula
 compareLength = min(mesLength, simLength);
 
 % Apply the multiplier to led.a.rhIn values
-multiplier = 0.85; %0.61; %0.83;
+multiplier = 0.61; %0.85; %0.61; %0.83;
 if exist('multiplier', 'var') && ~isempty(multiplier)
     led.a.rhIn.val(:,2) = led.a.rhIn.val(:,2) * multiplier;
 end
 
+% Added PAR from sun and lamp
+sunLampIrradiance = (led.a.rParGhSun.val(1:compareLength,2)+led.a.rParGhLamp.val(1:compareLength,2)) - 1.66;
+
 % Calculate RRMSE
 rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
-rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(:,2))) * 100;
+rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(1:compareLength,2))) * 100;
+rrmseIinside = (sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2))./mean(v.iInside.val(1:compareLength,2))) * 100;
 
 % Calculate RMSE
-rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2)).^2));
+rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2)).^2));
 rmseRhair = sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
 rmseCo2air = sqrt(mean((led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
+rmseIinside = sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2));
 
 % Calculate ME 
 meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
 meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
+meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
 
 % Save the output 
 save exampleMiniGreenhouse
@@ -104,17 +111,20 @@ if exist('multiplier', 'var') && ~isempty(multiplier)
 end
 fprintf('Season Length: %d day(s) \n', seasonLength);
 fprintf('---------------------------------------------\n');
-fprintf('| Metric          | Value       | Unit       |\n');
+fprintf('| Metric          | Value       | Unit       \n');
 fprintf('---------------------------------------------\n');
-fprintf('| RRMSE Tair      | %-12.2f| %%          |\n', rrmseTair);
-fprintf('| RRMSE Rhair     | %-12.2f| %%          |\n', rrmseRhair);
-fprintf('| RRMSE Co2air    | %-12.2f| %%          |\n', rrmseCo2air);
-fprintf('| RMSE Tair       | %-12.2f| °C         |\n', rmseTair);
-fprintf('| RMSE Rhair      | %-12.2f| %%          |\n', rmseRhair);
-fprintf('| RMSE Co2air     | %-12.2f| ppm        |\n', rmseCo2air);
-fprintf('| ME Tair         | %-12.2f| °C         |\n', meTair);
-fprintf('| ME Rhair        | %-12.2f| %%          |\n', meRhair);
-fprintf('| ME Co2air       | %-12.2f| ppm        |\n', meCo2air);
+fprintf('| RRMSE Tair      | %-12.2f| %%              \n', rrmseTair);
+fprintf('| RRMSE Rhair     | %-12.2f| %%              \n', rrmseRhair);
+fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
+fprintf('| RRMSE IInside   | %-12.2f| %%              \n', rrmseIinside);
+fprintf('| RMSE Tair       | %-12.2f| °C              \n', rmseTair);
+fprintf('| RMSE Rhair      | %-12.2f| %%              \n', rmseRhair);
+fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
+fprintf('| RMSE IInside    | %-12.2f| W m^{-2}        \n', rmseIinside);
+fprintf('| ME Tair         | %-12.2f| °C              \n', meTair);
+fprintf('| ME Rhair        | %-12.2f| %%              \n', meRhair);
+fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
+fprintf('| ME Iinside      | %-12.2f| W m^{-2}        \n', meIinside);
 fprintf('---------------------------------------------\n');
 
 %% Plot some outputs 
@@ -148,28 +158,59 @@ legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 3 CO2 IN PPM
-figure(3)
-plot(led.a.co2InPpm,'LineWidth',1.5)
-hold on
-plot(v.co2Air.val(:,1), v.co2Air.val(:,2),'LineWidth',1.5)
-plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
-hold off
-xlabel('Time')
-ylabel('CO2 concentration (ppm)')
-legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
-setXAxisTicksAndLabels(led.t.label, seasonLength)
+% figure(3)
+% plot(led.a.co2InPpm,'LineWidth',1.5)
+% hold on
+% plot(v.co2Air.val(:,1), v.co2Air.val(:,2),'LineWidth',1.5)
+% plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
+% hold off
+% xlabel('Time')
+% ylabel('CO2 concentration (ppm)')
+% legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
+% setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 4 PPFD
-figure(4)
-plot(led.p.parJtoUmolSun * led.a.rParGhSun,'LineWidth',1.5)
+% figure(4)
+% plot(led.p.parJtoUmolSun * led.a.rParGhSun,'LineWidth',1.5)
+% hold on
+% plot(led.p.zetaLampPar * led.a.rParGhLamp,'LineWidth',1.5)
+% hold off
+% xlabel('Time')
+% ylabel('umol (PAR) m^{-2} s^{-1}')
+% legend('PPFD from the sun', 'PPFD from the lamp')
+% setXAxisTicksAndLabels(led.t.label, seasonLength)
+
+%% Figure 3 PAR
+figure(3)
+plot(led.d.iGlob,'LineWidth',1.5)
 hold on
-plot(led.p.zetaLampPar * led.a.rParGhLamp,'LineWidth',1.5)
+plot(led.a.rParGhSun+led.a.rParGhLamp,'LineWidth',1.5)
+plot(v.iInside.val(:,1), v.iInside.val(:,2),'LineWidth',1.5)
 hold off
 xlabel('Time')
-ylabel('umol (PAR) m^{-2} s^{-1}')
-legend('PPFD from the sun', 'PPFD from the lamp')
+legend('Measured - outdoor global solar radiation', 'Simulated - PAR above the canopy (sun+lamp)',...
+'Measured - PAR above the canopy (sun+lamp)')
+
+ylabel('W m^{-2}')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
 
+%% Figure 4 PAR2nd
+figure(4)
+plot(led.d.iGlob,'LineWidth',1.5)
+hold on
+plot(led.a.rParGhSun+led.a.rParGhLamp,'LineWidth',1.5)
+plot(v.iInside.val(:,1), v.iInside.val(:,2),'LineWidth',1.5)
+plot(led.a.qLampIn,'LineWidth',1.5)
+plot(led.a.rParGhSun,'LineWidth',1.5)
+plot(led.a.rParGhLamp,'LineWidth',1.5)
+hold off
+xlabel('Time')
+legend('Measured - outdoor global solar radiation', 'Simulated - PAR above the canopy (sun+lamp)',...
+    'Measured - PAR above the canopy (sun+lamp)','Maximum intensity of lamps', ...
+    'Simulated - PAR above the canopy (sun)', 'Simulated - PAR above the canopy (lamp)')
+
+ylabel('W m^{-2}')
+setXAxisTicksAndLabels(led.t.label, seasonLength)
 %% Clear the workspace
 clear;
 

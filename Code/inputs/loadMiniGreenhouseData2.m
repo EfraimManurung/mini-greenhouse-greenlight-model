@@ -132,11 +132,13 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %   indoor(:,2)     temperature       [°C]             indoor air temperature
     %   indoor(:,3)     humidity    [%] RH        
     %   indoor(:,4)     co2         [ppm]                  indoor co2 concentration
+    %   indoor(:,5)     Radiation inside                    W m^{-2}
 
     indoor(:,1) = outdoor(:,1);
     indoor(:,2) = inputData(:,4);
     indoor(:,3) = inputData(:,6);
     indoor(:,4) = inputData(:,8);
+    indoor(:,5) = inputData(:,3);
 
     %% CONTROL
     % Control reformartted dataset
