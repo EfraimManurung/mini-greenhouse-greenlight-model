@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 5; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -133,85 +133,98 @@ fprintf('---------------------------------------------\n');
 % dateFormat = 'HH:00'; 
 % This format can be changed, see help file for MATLAB function datestr
 
-%% Figure 1 TEMPERATURE
-figure(1)
-plot(led.x.tAir,'LineWidth',1.5)
-hold on
-plot(v.tAir.val(:,1), v.tAir.val(:,2),'LineWidth',1.5)
-plot(led.d.tOut,'LineWidth',1.5)
-hold off
-xlabel('Time')
-ylabel('Temperature (°C)')
-legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
-setXAxisTicksAndLabels(led.t.label, seasonLength)
+% Combine all three graphs into one figure with subplots
 
-%% Figure 2 RELATIVE HUMIDITY
-figure(2)
-plot(led.a.rhIn,'LineWidth',1.5)
-hold on
-plot(v.rhAir.val(:,1), v.rhAir.val(:,2),'LineWidth',1.5)
-plot(100*vp2dens(led.d.tOut,led.d.vpOut)./rh2vaporDens(led.d.tOut,100),'LineWidth',1.5);
-hold off
-xlabel('Time')
-ylabel('Relative humidity (%)')
-legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
-setXAxisTicksAndLabels(led.t.label, seasonLength)
+% Create a new figure
+figure;
 
-%% Figure 3 CO2 IN PPM
-% figure(3)
-% plot(led.a.co2InPpm,'LineWidth',1.5)
-% hold on
-% plot(v.co2Air.val(:,1), v.co2Air.val(:,2),'LineWidth',1.5)
-% plot(co2dens2ppm(led.d.tOut,1e-6*led.d.co2Out),'LineWidth',1.5)
-% hold off
-% xlabel('Time')
-% ylabel('CO2 concentration (ppm)')
-% legend('Indoor-Simulated', 'Indoor-Measured', 'Outdoor-Measured')
-% setXAxisTicksAndLabels(led.t.label, seasonLength)
+%% TEMPERATURE FIGURES
+subplot(4, 1, 1); % 3 rows, 1 column, 1st subplot
+plot(v.tAir.val(:, 1), v.tAir.val(:, 2), 'LineWidth', 1.0);
+hold on;
+plot(led.x.tAir, 'LineWidth', 1.0);
+hold off;
+ylabel('Air Temp In [°C]');
+legend('Indoor-Measured', 'Indoor-Simulated');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-%% Figure 4 PPFD
-% figure(4)
-% plot(led.p.parJtoUmolSun * led.a.rParGhSun,'LineWidth',1.5)
-% hold on
-% plot(led.p.zetaLampPar * led.a.rParGhLamp,'LineWidth',1.5)
-% hold off
-% xlabel('Time')
-% ylabel('umol (PAR) m^{-2} s^{-1}')
-% legend('PPFD from the sun', 'PPFD from the lamp')
-% setXAxisTicksAndLabels(led.t.label, seasonLength)
+subplot(4, 1, 2);
+plot(led.d.tOut, 'LineWidth', 1.0);
+ylabel('Air Temp Out [°C]');
+legend('Outdoor-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-%% Figure 3 PAR
-figure(3)
-plot(led.a.rParGhSun+led.a.rParGhLamp,'LineWidth',1.5)
-hold on
-plot(v.iInside.val(:,1), v.iInside.val(:,2),'LineWidth',1.5)
-plot(led.d.iGlob,'LineWidth',1.5)
-hold off
-xlabel('Time')
-legend('Simulated - PAR above the canopy (sun+lamp)', ...
-    'Measured - PAR above the canopy (sun+lamp)', ...
-    'Measured - outdoor global solar radiation')
+subplot(4, 1, 3);
+plot(led.d.iGlob, 'LineWidth', 1.0); 
+ylabel('Illumin Out [W m^{-2}]');
+legend('Outdoor-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-ylabel('W m^{-2}')
-setXAxisTicksAndLabels(led.t.label, seasonLength)
+subplot(4, 1, 4);
+plot(controls(:,1), controls(:,4), 'LineWidth', 1.0);
+ylabel('Fans [-]');
+ylim([-0.05 1.05]);
+legend('Controls-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-%% Figure 4 PAR2nd
-figure(4)
-plot(led.d.iGlob,'LineWidth',1.5)
-hold on
-plot(led.a.rParGhSun+led.a.rParGhLamp,'LineWidth',1.5)
-plot(v.iInside.val(:,1), v.iInside.val(:,2),'LineWidth',1.5)
-plot(led.a.qLampIn,'LineWidth',1.5)
-plot(led.a.rParGhSun,'LineWidth',1.5)
-plot(led.a.rParGhLamp,'LineWidth',1.5)
-hold off
-xlabel('Time')
-legend('Measured - outdoor global solar radiation', 'Simulated - PAR above the canopy (sun+lamp)',...
-    'Measured - PAR above the canopy (sun+lamp)','Maximum intensity of lamps', ...
-    'Simulated - PAR above the canopy (sun)', 'Simulated - PAR above the canopy (lamp)')
+%% RELATIVE HUMIDITY FIGURES
+figure;
+subplot(4, 1, 1); % 3 rows, 1 column, 2nd subplot
+plot(v.rhAir.val(:, 1), v.rhAir.val(:, 2), 'LineWidth', 1.0);
+hold on;
+plot(led.a.rhIn, 'LineWidth', 1.0);
+hold off;
+ylabel('Rel Humid In [%]');
+legend('Indoor-Measured', 'Indoor-Simulated');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-ylabel('W m^{-2}')
-setXAxisTicksAndLabels(led.t.label, seasonLength)
+subplot(4, 1, 2);
+plot(100 * vp2dens(led.d.tOut, led.d.vpOut) ./ rh2vaporDens(led.d.tOut, 100), 'LineWidth', 1.0); 
+ylabel('Rel Humid Out [%]');
+legend('Outdoor-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+subplot(4, 1, 3); 
+plot(v.tAir.val(:, 1), v.tAir.val(:, 2), 'LineWidth', 1.0);
+ylabel('Air Temp In [°C]');
+legend('Indoor-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+subplot(4, 1, 4);
+plot(controls(:,1), controls(:,4), 'LineWidth', 1.0);
+ylabel('Fans [-]');
+ylim([-0.05 1.05]);
+legend('Controls-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+%% PAR light level FIGURES
+figure;
+
+subplot(3, 1, 1);
+plot(v.iInside.val(:, 1), v.iInside.val(:, 2), 'LineWidth', 1.0);
+hold on;
+plot(led.a.rParGhSun + led.a.rParGhLamp, 'LineWidth', 1.0);
+hold off;
+ylabel('PAR in [W m^{-2}]');
+legend('Measured - PAR above the canopy (sun+lamp)', 'Simulated - PAR above the canopy (sun+lamp)');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+% Create a subplot and plot with green leaf color
+subplot(3, 1, 2);
+% plot(led.d.iGlob, 'LineWidth', 1.0, 'Color', [0.13, 0.55, 0.13]); % RGB values for green leaf color
+plot(led.d.iGlob, 'LineWidth', 1.0) 
+ylabel('Illumin Out [W m^{-2}]');
+legend('Outdoor-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+subplot(3, 1, 3);
+plot(controls(:,1), controls(:,7), 'LineWidth', 1.0);
+ylabel('Lamps [-]');
+ylim([-0.05 1.05]);
+legend('Controls-Measured');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+
 %% Clear the workspace
 clear;
 
@@ -221,12 +234,13 @@ function setXAxisTicksAndLabels(timeLabels, seasonLength)
     dateticks = datenum(datenum(timeLabels) + numTicks / (60*60*24)); % Assuming timestamps are in seconds
     if seasonLength > 2
         datestrings = datestr(dateticks, 'dd');
-        xlabel('Time (days)')
+        xlabel('Time [d]')
     else
+        xlabel('Time [h]')
         datestrings = datestr(dateticks, 'HH:00');
     end
     xticks(numTicks);
     xticklabels(datestrings);
-    xtickangle(45);
+    %xtickangle(45);
 end
 
