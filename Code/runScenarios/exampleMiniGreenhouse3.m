@@ -182,14 +182,15 @@ setXAxisTicksAndLabels(led.t.label, seasonLength)
 
 %% Figure 3 PAR
 figure(3)
-plot(led.d.iGlob,'LineWidth',1.5)
-hold on
 plot(led.a.rParGhSun+led.a.rParGhLamp,'LineWidth',1.5)
+hold on
 plot(v.iInside.val(:,1), v.iInside.val(:,2),'LineWidth',1.5)
+plot(led.d.iGlob,'LineWidth',1.5)
 hold off
 xlabel('Time')
-legend('Measured - outdoor global solar radiation', 'Simulated - PAR above the canopy (sun+lamp)',...
-'Measured - PAR above the canopy (sun+lamp)')
+legend('Simulated - PAR above the canopy (sun+lamp)', ...
+    'Measured - PAR above the canopy (sun+lamp)', ...
+    'Measured - outdoor global solar radiation')
 
 ylabel('W m^{-2}')
 setXAxisTicksAndLabels(led.t.label, seasonLength)
