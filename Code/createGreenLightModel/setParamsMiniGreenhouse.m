@@ -37,7 +37,7 @@ function setParamsMiniGreenhouse(gl)
     setParam(gl, 'cWgh', 0.09);         %OK         % Ventilation global wind pressure coefficient 													-                       0.09 [1]
     
     setParam(gl, 'tauRfNir', 0.45); 	%OK		    % NIR transmission coefficient of the roof 														- 						0.57 [4]
-    setParam(gl, 'tauRfPar', 0.64);  	%OK		    % PAR transmission coefficient of the roof 														- 						0.57 [4]
+    setParam(gl, 'tauRfPar', 0.82);  	%OK		    % PAR transmission coefficient of the roof 														- 						0.57 [4]
     setParam(gl, 'tauThScrPar', 0.75); 			    % PAR transmission coefficient of thermal screen 												- 						0.75 (estimated)
     setParam(gl, 'kBlScr',5e-4);                    % Blackout screen flux coefficient 																m^{3} m^{-2} K^{-2/3} s^{-1}    
     setParam(gl, 'kThScr',5e-4);                    % Thermal screen flux coefficient 																m^{3} m^{-2} K^{-2/3} s^{-1}    5e-5 [1]
