@@ -33,8 +33,8 @@ function setParamsMiniGreenhouse(gl)
     setParam(gl, 'aRoof', 0.051);       %OK         % Maximum roof ventilation area 																- 						52.2 [4]
     setParam(gl, 'hVent', 0.6);         %OK         % Vertical dimension of single ventilation opening 												m 						0.87 [4]
     setParam(gl, 'cLeakage', 0.3e-4); 	%OK		    % Leakage coefficient 																			- 						0.3e-4 (estimated)
-    setParam(gl, 'cDgh', 0.35);         %OK         % Ventilation discharge coefficient 															-                               0.75 [1]
-    setParam(gl, 'cWgh', 0.02);         %OK         % Ventilation global wind pressure coefficient 													-                               0.09 [1]
+    setParam(gl, 'cDgh', 0.75);         %OK         % Ventilation discharge coefficient 															-                       0.75 [1]
+    setParam(gl, 'cWgh', 0.09);         %OK         % Ventilation global wind pressure coefficient 													-                       0.09 [1]
     
     setParam(gl, 'tauRfNir', 0.45); 	%OK		    % NIR transmission coefficient of the roof 														- 						0.57 [4]
     setParam(gl, 'tauRfPar', 0.64);  	%OK		    % PAR transmission coefficient of the roof 														- 						0.57 [4]

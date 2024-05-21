@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 5; % season length in days
+seasonLength = 3; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -129,12 +129,6 @@ fprintf('---------------------------------------------\n');
 
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
-
-% dateFormat = 'HH:00'; 
-% This format can be changed, see help file for MATLAB function datestr
-
-% Combine all three graphs into one figure with subplots
-
 % Create a new figure
 figure;
 
