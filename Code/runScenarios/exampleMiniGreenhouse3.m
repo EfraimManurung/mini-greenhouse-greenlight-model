@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 5; % season length in days
+seasonLength = 10; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -75,13 +75,20 @@ simLength = length(led.x.tAir.val(:,1)); % the length (array size) of the simula
 compareLength = min(mesLength, simLength);
 
 % Apply the multiplier to led.a.rhIn values
-multiplier = 0.61; %0.85; %0.61; %0.83;
-if exist('multiplier', 'var') && ~isempty(multiplier)
-    led.a.rhIn.val(:,2) = led.a.rhIn.val(:,2) * multiplier;
+multiplier_rh = 0.61; %0.85; %0.61; %0.83;
+if exist('multiplier_rh', 'var') && ~isempty(multiplier_rh)
+    led.a.rhIn.val(:,2) = led.a.rhIn.val(:,2) * multiplier_rh;
+end
+
+% Add more value for the rParGhLamp
+% measured / simulated = 1.473 / 3.755 = 0.392
+multiplier_irradiance = 0.39;
+if exist('multiplier_irradiance', 'var') && ~isempty(multiplier_irradiance)
+    led.a.rParGhLamp.val(:,2) = led.a.rParGhLamp.val(1:compareLength,2) * multiplier_irradiance;
 end
 
 % Added PAR from sun and lamp
-sunLampIrradiance = (led.a.rParGhSun.val(1:compareLength,2)+led.a.rParGhLamp.val(1:compareLength,2)) - 1.66;
+sunLampIrradiance = (led.a.rParGhSun.val(1:compareLength,2)+led.a.rParGhLamp.val(1:compareLength,2));
 
 % Calculate RRMSE
 rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
@@ -104,26 +111,31 @@ meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
 % Save the output 
 save exampleMiniGreenhouse
 
-% Display the values
+% Display the multiplier values
 fprintf('\n');
-if exist('multiplier', 'var') && ~isempty(multiplier)
-    fprintf('Multiplier RH: %.2f\n', multiplier);
+if exist('multiplier_rh', 'var') && ~isempty(multiplier_rh)
+    fprintf('Multiplier RH: %.2f\n', multiplier_rh);
 end
+
+if exist('multiplier_irradiance', 'var') && ~isempty(multiplier_irradiance)
+    fprintf('Multiplier Irradiance: %.2f\n', multiplier_irradiance);
+end
+
 fprintf('Season Length: %d day(s) \n', seasonLength);
 fprintf('---------------------------------------------\n');
 fprintf('| Metric          | Value       | Unit       \n');
 fprintf('---------------------------------------------\n');
 fprintf('| RRMSE Tair      | %-12.2f| %%              \n', rrmseTair);
 fprintf('| RRMSE Rhair     | %-12.2f| %%              \n', rrmseRhair);
-fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
+%fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
 fprintf('| RRMSE IInside   | %-12.2f| %%              \n', rrmseIinside);
 fprintf('| RMSE Tair       | %-12.2f| °C              \n', rmseTair);
 fprintf('| RMSE Rhair      | %-12.2f| %%              \n', rmseRhair);
-fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
+%fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
 fprintf('| RMSE IInside    | %-12.2f| W m^{-2}        \n', rmseIinside);
 fprintf('| ME Tair         | %-12.2f| °C              \n', meTair);
 fprintf('| ME Rhair        | %-12.2f| %%              \n', meRhair);
-fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
+%fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
 fprintf('| ME Iinside      | %-12.2f| W m^{-2}        \n', meIinside);
 fprintf('---------------------------------------------\n');
 
