@@ -91,7 +91,7 @@ end
 sunLampIrradiance = (led.a.rParGhSun.val(1:compareLength,2)+led.a.rParGhLamp.val(1:compareLength,2));
 
 % Calculate RRMSE
-rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(:,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
+rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(1:compareLength,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
 rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(1:compareLength,2))) * 100;
 rrmseIinside = (sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2))./mean(v.iInside.val(1:compareLength,2))) * 100;
@@ -103,7 +103,7 @@ rmseCo2air = sqrt(mean((led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:com
 rmseIinside = sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2));
 
 % Calculate ME 
-meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(:,2));
+meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2));
 meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
@@ -230,6 +230,13 @@ ylim([-0.05 1.05]);
 legend('Controls-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
+%% Crop growth Figure(s)
+figure;
+
+plot(led.a.lai, 'LineWidth', 1.0);
+ylabel('m^2 m^{-2}')
+legend('LAI-simulated')
+setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 %% Clear the workspace
 clear;
