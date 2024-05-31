@@ -14,8 +14,8 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 10; % season length in days
-firstDay = 1; % days since beginning of data 
+seasonLength = 1; % season length in days
+firstDay = 6; % days since beginning of data 
 
 % Choice of lamp
 lampType = 'led'; 
@@ -233,13 +233,56 @@ setXAxisTicksAndLabels(led.t.label, seasonLength);
 %% Crop growth Figure(s)
 figure;
 
+% plot(led.a.lai, 'LineWidth', 1.0);
+% ylabel('m^2 m^{-2}')
+% legend('LAI-simulated')
+% setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+plot(led.x.cFruit, 'LineWidth', 1.0);
+hold on
+plot(led.x.cStem, 'LineWidth', 1.0);
+plot(led.x.cLeaf, 'LineWidth', 1.0);
+plot(led.x.cBuf, 'LineWidth', 1.0);
+ylabel('mg (CH_2O) m^{-2}')
+yyaxis right
 plot(led.a.lai, 'LineWidth', 1.0);
 ylabel('m^2 m^{-2}')
-legend('LAI-simulated')
+legend('Fruit dry weight','Stem dry weight','Leaf dry weight','Buffer content','LAI')
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 %% Clear the workspace
-clear;
+% clear;
+
+%% extract relvent data into excel for DRL model
+% Extract the relevant data
+time = led.x.tAir.val(:, 1); % Time
+indoorTemperature = led.x.tAir.val(:, 2); % Indoor temperature
+indoorHumidity = led.a.rhIn.val(:, 2); % Indoor humidity
+PARinside = led.a.rParGhSun.val(:, 2) + led.a.rParGhLamp.val(:, 2); % PAR inside
+fruitDryWeight = led.x.cFruit.val(:, 2); % Fruit dry weight
+
+% Combine data into a table
+data = table(time, indoorTemperature, indoorHumidity, PARinside, fruitDryWeight, ...
+    'VariableNames', {'Time', 'IndoorTemperature', 'IndoorHumidity', 'PARinside', 'FruitDryWeight'});
+
+% Specify the folder where you want to save the file
+outputFolder = fullfile(pwd, 'Output');
+
+% Check if the folder exists, if not, create it
+if ~exist(outputFolder, 'dir')
+   mkdir(outputFolder);
+end
+
+% Full path to the file
+outputFilePath = fullfile(outputFolder, 'exampleMiniGreenhouseData.xlsx');
+
+% Write the table to an Excel file
+writetable(data, outputFilePath);
+
+% Display the full path where the file is saved
+fprintf('Data exported to: %s\n', outputFilePath);
+
+
 
 %% Function for the figures
 function setXAxisTicksAndLabels(timeLabels, seasonLength)

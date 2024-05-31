@@ -51,6 +51,8 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 %       controls(:,7)     Toplights on/off                  0/1 (1 is on)
 %       controls(:,8)     Interlight on/off                 0/1 (1 is on)
 %       controls(:,9)     CO2 injection                     0/1 (1 is on)
+%       controls(:,10)    Boiler valve [-]                  0-1 where 1 is full capacity and 0 is off 
+%       
 %
 %   indoor          (optional) A 3 column matrix with:
 %       indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
@@ -117,6 +119,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %       weather(:,9)    daily radiation sum [MJ m^{-2} day^{-1}]
 
     outdoor(:,1) = interval*(0:length(inputData(:,1))-1); % time
+    % inputData(:,2) = inputData(:,2) * 100;
     outdoor(:,2) = inputData(:,2); 
     %outdoor(:,3) = inputData(:,5); % without adding temperature by 1.5
     outdoor(:,3) = inputData(:,5)+1.5; % air temperature % INCREASE OF TEMPERATURE BY 1.5
@@ -152,6 +155,8 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     %   controls(:,7)     Toplights on/off                  0/1 (1 is on)
     %   controls(:,8)     Interlight on/off                 0/1 (1 is on)
     %   controls(:,9)     CO2 injection                     0/1 (1 is on)
+    %   controls(:,10)    Boiler valve [-]                  0-1 where 1 is full capacity and 0 is off 
+
     controls(:,1) = outdoor(:,1);
     controls(:,2) = 0;
     controls(:,3) = 0; 
@@ -161,5 +166,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     controls(:,7) = inputData(:,10);
     controls(:,8) = 0;
     controls(:,9) = 0;
+    controls(:,10) = zeros(size(controls(:,1)));
 
 end

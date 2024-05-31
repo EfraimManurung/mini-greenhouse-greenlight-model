@@ -107,8 +107,11 @@ function gl = createGreenLightModel(lampType, weather, startTime, controls, indo
         addControl(gl, 'extCo2', [time controls(:,9)]);
         addControl(gl, 'intLamp', [time controls(:,8)]);
 
+        % Now we're considering the boil
+        addControl(gl, 'boil', [time controls(:,8)]);
+
         % controls not considered
-        addControl(gl, 'boil', [time zeros(size(time))]);
+        %addControl(gl, 'boil', [time zeros(size(time))]);
         addControl(gl, 'shScrPer', [time zeros(size(time))]);
         addControl(gl, 'side', [time zeros(size(time))]);
         addControl(gl, 'boilGro', [time zeros(size(time))]);
