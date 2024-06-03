@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 3; % season length in days
 firstDay = 6; % days since beginning of data 
 
 % Choice of lamp
@@ -27,6 +27,25 @@ v.tAir = DynamicElement('v.tAir', [floor(indoor(:,1)) indoor(:,2)]);
 v.rhAir = DynamicElement('v.rhAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.co2Air = DynamicElement('v.co2Air', [floor(indoor(:,1)) indoor(:,4)]);
 v.iInside = DynamicElement('v.iInside', [floor(indoor(:,1)) indoor(:,5)]);
+
+% Extract maximum and minimum values from each DynamicElement
+max_tAir = max(v.tAir.val(:, 2));
+min_tAir = min(v.tAir.val(:, 2));
+
+max_rhAir = max(v.rhAir.val(:, 2));
+min_rhAir = min(v.rhAir.val(:, 2));
+
+max_co2Air = max(v.co2Air.val(:, 2));
+min_co2Air = min(v.co2Air.val(:, 2));
+
+max_iInside = max(v.iInside.val(:, 2));
+min_iInside = min(v.iInside.val(:, 2));
+
+% Display or store these values
+fprintf('Temperature (°C) - Max: %.2f, Min: %.2f\n', max_tAir, min_tAir);
+fprintf('Relative Humidity (%%) - Max: %.2f, Min: %.2f\n', max_rhAir, min_rhAir);
+fprintf('CO2 Concentration (ppm) - Max: %.2f, Min: %.2f\n', max_co2Air, min_co2Air);
+fprintf('PAR Inside (W/m^2) - Max: %.2f, Min: %.2f\n', max_iInside, min_iInside);
 
 % number of seconds since beginning of year to startTime
 secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));

@@ -108,7 +108,8 @@ function gl = createGreenLightModel(lampType, weather, startTime, controls, indo
         addControl(gl, 'intLamp', [time controls(:,8)]);
 
         % Now we're considering the boil
-        addControl(gl, 'boil', [time controls(:,8)]);
+        % controls_iot(:,10) = controls_drl(:,4); % Boiler value
+        addControl(gl, 'boil', [time controls(:,10)]);
 
         % controls not considered
         %addControl(gl, 'boil', [time zeros(size(time))]);
