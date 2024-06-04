@@ -25,6 +25,13 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 % 10        Toplights on/off                    0/1 (1 is on)
 % 11        Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
 %
+% Inputs: 
+% REMEMBER THAT it using Dataset6 for now
+%   firstDay       Where to start looking at the data 
+%                       (days since start of the season, fractions accepted)
+%                       The start of the season is Friday, May 10, 2024 12:00:00 AM
+%   length         Length of the input in days (fractions accepted)
+%                       The length of the entire dataset is 10 days
 % Output:
 % Function inputs:
 %   lampType        Type of lamps in the greenhouse. Choose between 
