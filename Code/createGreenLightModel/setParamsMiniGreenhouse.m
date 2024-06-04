@@ -56,6 +56,10 @@ function setParamsMiniGreenhouse(gl)
    
     setParam(gl, 'cHecIn', 3.5);        %OK         % Convective heat exchange between cover and outdoor air 										W m^{-2} K^{-1}                 1.86 [1]
     
+    % Heating system in the mini greenhouse
+    % Small fan heater
+    addParam(gl, 'pBoil', 100 / 0.83);         %OK         % Capacity of the heating system                                                                W / m^{-2}                      130*p.aFlr (Assumed to be 150 m3/h/ha = 130 W m^{-2} [5])
+
     % Reset other parameters that may depend on parameters changed above
     setDepParams(gl);    
 end
