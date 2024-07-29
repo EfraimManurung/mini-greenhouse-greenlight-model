@@ -14,11 +14,11 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 3; % season length in days
-firstDay = 6; % days since beginning of data 
+seasonLength = 60; % season length in days
+firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
-lampType = 'led'; 
+lampType = 'led';   
 
 [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstDay, seasonLength);
 
@@ -301,7 +301,8 @@ writetable(data, outputFilePath);
 % Display the full path where the file is saved
 fprintf('Data exported to: %s\n', outputFilePath);
 
-
+% Clear
+clear;
 
 %% Function for the figures
 function setXAxisTicksAndLabels(timeLabels, seasonLength)
@@ -318,4 +319,6 @@ function setXAxisTicksAndLabels(timeLabels, seasonLength)
     xticklabels(datestrings);
     %xtickangle(45);
 end
+
+
 
