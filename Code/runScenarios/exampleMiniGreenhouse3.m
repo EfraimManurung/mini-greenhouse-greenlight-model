@@ -128,7 +128,7 @@ meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLeng
 meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
 
 % Save the output 
-save exampleMiniGreenhouse
+% save exampleMiniGreenhouse
 
 % Display the multiplier values
 fprintf('\n');
@@ -146,15 +146,15 @@ fprintf('| Metric          | Value       | Unit       \n');
 fprintf('---------------------------------------------\n');
 fprintf('| RRMSE Tair      | %-12.2f| %%              \n', rrmseTair);
 fprintf('| RRMSE Rhair     | %-12.2f| %%              \n', rrmseRhair);
-%fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
+fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
 fprintf('| RRMSE IInside   | %-12.2f| %%              \n', rrmseIinside);
 fprintf('| RMSE Tair       | %-12.2f| °C              \n', rmseTair);
 fprintf('| RMSE Rhair      | %-12.2f| %%              \n', rmseRhair);
-%fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
+fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
 fprintf('| RMSE IInside    | %-12.2f| W m^{-2}        \n', rmseIinside);
 fprintf('| ME Tair         | %-12.2f| °C              \n', meTair);
 fprintf('| ME Rhair        | %-12.2f| %%              \n', meRhair);
-%fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
+fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
 fprintf('| ME Iinside      | %-12.2f| W m^{-2}        \n', meIinside);
 fprintf('---------------------------------------------\n');
 
@@ -273,16 +273,24 @@ setXAxisTicksAndLabels(led.t.label, seasonLength);
 % clear;
 
 %% extract relvent data into excel for DRL model
-% Extract the relevant data
-time = led.x.tAir.val(:, 1); % Time
-indoorTemperature = led.x.tAir.val(:, 2); % Indoor temperature
-indoorHumidity = led.a.rhIn.val(:, 2); % Indoor humidity
-PARinside = led.a.rParGhSun.val(:, 2) + led.a.rParGhLamp.val(:, 2); % PAR inside
+% Extract the relevant simulated data
+time = (led.x.tAir.val(:, 1) / 300) * 5; % Time
+temp_sim = led.x.tAir.val(:, 2); % Indoor temperature
+hum_sim = led.a.rhIn.val(:, 2); % Indoor humidity
+par_sim = led.a.rParGhSun.val(:, 2) + led.a.rParGhLamp.val(:, 2); % PAR inside
+co2_sim = led.x.co2Air.val(:, 2); % Indoor co2
 fruitDryWeight = led.x.cFruit.val(:, 2); % Fruit dry weight
 
+% Extract the relevant real measurements data
+temp_real = v.tAir.val(:, 2);
+hum_real = v.rhAir.val(:, 2);
+par_real = v.iInside.val(:, 2);
+co2_real = v.tAir.val(:, 2);
+
 % Combine data into a table
-data = table(time, indoorTemperature, indoorHumidity, PARinside, fruitDryWeight, ...
-    'VariableNames', {'Time', 'IndoorTemperature', 'IndoorHumidity', 'PARinside', 'FruitDryWeight'});
+data = table(time, co2_sim, co2_real, temp_sim, temp_real, hum_sim, hum_real, par_sim, par_real, fruitDryWeight, ...
+    'VariableNames', {'Time', 'co2 in - sim', 'co2 in - real' ...
+    'temperature in - sim',	'temperature in - real', 'rh in - sim', 'rh in - real',	'par in - sim',	'par in - real', 'fruitDryWeight'});
 
 % Specify the folder where you want to save the file
 outputFolder = fullfile(pwd, 'Output');
@@ -293,7 +301,7 @@ if ~exist(outputFolder, 'dir')
 end
 
 % Full path to the file
-outputFilePath = fullfile(outputFolder, 'exampleMiniGreenhouseData.xlsx');
+outputFilePath = fullfile(outputFolder, 'exampleMiniGreenhouseData-fixed.xlsx');
 
 % Write the table to an Excel file
 writetable(data, outputFilePath);
