@@ -112,19 +112,19 @@ sunLampIrradiance = (led.a.rParGhSun.val(1:compareLength,2)+led.a.rParGhLamp.val
 % Calculate RRMSE
 rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(1:compareLength,2)).^2))./mean(v.tAir.val(1:compareLength,2))) * 100;
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
-rrmseCo2air  = (sqrt(mean((led.x.co2Air.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(1:compareLength,2))) * 100;
+rrmseCo2air  = (sqrt(mean((led.a.co2InPpm.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(1:compareLength,2))) * 100;
 rrmseIinside = (sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2))./mean(v.iInside.val(1:compareLength,2))) * 100;
 
 % Calculate RMSE
 rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2)).^2));
 rmseRhair = sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
-rmseCo2air = sqrt(mean((led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
+rmseCo2air = sqrt(mean((led.a.co2InPpm.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
 rmseIinside = sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2));
 
 % Calculate ME 
 meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2));
 meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
-meCo2air = mean(led.x.co2Air.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
+meCo2air = mean(led.a.co2InPpm.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
 
 % Save the output 
@@ -278,14 +278,15 @@ time = (led.x.tAir.val(:, 1) / 300) * 5; % Time
 temp_sim = led.x.tAir.val(:, 2); % Indoor temperature
 hum_sim = led.a.rhIn.val(:, 2); % Indoor humidity
 par_sim = led.a.rParGhSun.val(:, 2) + led.a.rParGhLamp.val(:, 2); % PAR inside
-co2_sim = led.x.co2Air.val(:, 2); % Indoor co2
+% co2_sim = led.x.co2Air.val(:, 2); % Indoor co2
+co2_sim = led.a.co2InPpm.val(:, 2);           % Indoor co2
 fruitDryWeight = led.x.cFruit.val(:, 2); % Fruit dry weight
 
 % Extract the relevant real measurements data
 temp_real = v.tAir.val(:, 2);
 hum_real = v.rhAir.val(:, 2);
 par_real = v.iInside.val(:, 2);
-co2_real = v.tAir.val(:, 2);
+co2_real = v.co2Air.val(:, 2);
 
 % Combine data into a table
 data = table(time, co2_sim, co2_real, temp_sim, temp_real, hum_sim, hum_real, par_sim, par_real, fruitDryWeight, ...
@@ -301,7 +302,7 @@ if ~exist(outputFolder, 'dir')
 end
 
 % Full path to the file
-outputFilePath = fullfile(outputFolder, 'exampleMiniGreenhouseData-fixed.xlsx');
+outputFilePath = fullfile(outputFolder, 'exampleMiniGreenhouseData.xlsx');
 
 % Write the table to an Excel file
 writetable(data, outputFilePath);
