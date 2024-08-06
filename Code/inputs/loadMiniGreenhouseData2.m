@@ -31,7 +31,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 %                       (days since start of the season, fractions accepted)
 %                       The start of the season is Friday, May 10, 2024 12:00:00 AM
 %   length         Length of the input in days (fractions accepted)
-%                       The length of the entire dataset is 10 days
+%                       The length of the entire dataset is around 30 days
 % Output:
 % Function inputs:
 %   lampType        Type of lamps in the greenhouse. Choose between 
@@ -89,8 +89,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
         % index in the time array where data should start reading
     endPoint = startPoint-1+round(seasonLength*SECONDS_IN_DAY/interval);
     
-    %inputData = inputData(startPoint:endPoint,:);
-
     % calculate date and time of first data point
     startTime = datetime(minigreenhouse(1,1),'ConvertFrom','datenum');
 
