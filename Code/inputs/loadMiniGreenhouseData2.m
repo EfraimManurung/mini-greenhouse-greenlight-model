@@ -24,6 +24,7 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
 % 9         CO2 out                             ppm
 % 10        Toplights on/off                    0/1 (1 is on)
 % 11        Average roof ventilation aperture	(average between lee side and wind side)	0-1 (1 is fully open)
+% 12        Heater                              0/1 (1 is on)
 %
 % Inputs: 
 % REMEMBER THAT it using Dataset6 for now
@@ -171,6 +172,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstD
     controls(:,7) = inputData(:,10);
     controls(:,8) = 0;
     controls(:,9) = 0;
-    controls(:,10) = zeros(size(controls(:,1)));
+    controls(:,10) = inputData(:,12);   %zeros(size(controls(:,1))); HEATER
 
 end
