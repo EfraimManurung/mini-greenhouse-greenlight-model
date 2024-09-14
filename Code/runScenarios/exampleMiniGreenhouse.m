@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 60; % season length in days
+seasonLength = 1; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
