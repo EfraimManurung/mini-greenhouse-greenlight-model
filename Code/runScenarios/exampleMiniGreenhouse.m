@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 2; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
@@ -69,14 +69,16 @@ setMiniGreenhouseLedParams(led);   % set lamp params
 % start with 3.12 plants/m2, assume they are each 2 g = 6240 mg/m2.
 % Check the setGlinit.m for more information
 % Default values    
-led.x.cLeaf.val = 0.7*6240;     
-led.x.cStem.val = 0.25*6240;    
-led.x.cFruit.val = 0.05*6240;   
+% led.x.cLeaf.val = 0.7*6240;     
+% led.x.cStem.val = 0.25*6240;    
+% led.x.cFruit.val = 0.05*6240;  
+% led.x.tCanSum.val = 0;
 
-% Default values
-% led.x.cLeaf.val = 0.01;     
-% led.x.cStem.val = 0.01;    
-% led.x.cFruit.val = 0.01; 
+% Start with a mature crop
+led.x.cLeaf.val = 2.8e5;     
+led.x.cStem.val = 0.9e5;    
+led.x.cFruit.val = 2.5e5;  
+led.x.tCanSum.val = 3000;
 
 %% Run simulation
 solveFromFile(led, 'ode15s');
@@ -165,9 +167,12 @@ fprintf('---------------------------------------------\n');
 figure;
 
 subplot(5, 1, 1); % 3 rows, 1 column, 1st subplot
+%plot(v.tCan.val(:, 1), v.tCan.val(:, 2), 'LineWidth, 1.0);
+%hold on
 plot(led.x.tCan, 'LineWidth', 1.0);
-ylabel('Temperature [°C]');
-legend('Canopy Temp');
+ylabel('Canopy Temp [°C]');
+%legend('Canopy-Measured', 'Canopy-Simulated');
+legend('Canopy Simulated');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 subplot(5, 1, 2); % 3 rows, 1 column, 1st subplot
