@@ -161,10 +161,16 @@ fprintf('---------------------------------------------\n');
 %% Plot some outputs 
 % see setGlAux, setGlStates, setGlInput to see more options
 % Create a new figure
+%% TEMPERATURE FIGURES
 figure;
 
-%% TEMPERATURE FIGURES
-subplot(4, 1, 1); % 3 rows, 1 column, 1st subplot
+subplot(5, 1, 1); % 3 rows, 1 column, 1st subplot
+plot(led.x.tCan, 'LineWidth', 1.0);
+ylabel('Temperature [°C]');
+legend('Canopy Temp');
+setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+subplot(5, 1, 2); % 3 rows, 1 column, 1st subplot
 plot(v.tAir.val(:, 1), v.tAir.val(:, 2), 'LineWidth', 1.0);
 hold on;
 plot(led.x.tAir, 'LineWidth', 1.0);
@@ -173,21 +179,21 @@ ylabel('Air Temp In [°C]');
 legend('Indoor-Measured', 'Indoor-Simulated');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-subplot(4, 1, 2);
+subplot(5, 1, 3);
 plot(led.d.tOut, 'LineWidth', 1.0);
 ylabel('Air Temp Out [°C]');
 legend('Outdoor-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-subplot(4, 1, 3);
+subplot(5, 1, 4);
 plot(led.d.iGlob, 'LineWidth', 1.0); 
 ylabel('Illumin Out [W m^{-2}]');
 legend('Outdoor-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
-subplot(4, 1, 4);
+subplot(5, 1, 5);
 plot(controls(:,1), controls(:,4), 'LineWidth', 1.0);
-ylabel('Fans [-]');
+ylabel('Ventilation [-]');
 ylim([-0.05 1.05]);
 legend('Controls-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
@@ -217,7 +223,7 @@ setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 subplot(4, 1, 4);
 plot(controls(:,1), controls(:,4), 'LineWidth', 1.0);
-ylabel('Fans [-]');
+ylabel('Ventilation [-]');
 ylim([-0.05 1.05]);
 legend('Controls-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
@@ -244,7 +250,7 @@ setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 subplot(3, 1, 3);
 plot(controls(:,1), controls(:,7), 'LineWidth', 1.0);
-ylabel('Lamps [-]');
+ylabel('Toplights [-]');
 ylim([-0.05 1.05]);
 legend('Controls-Measured');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
@@ -268,6 +274,29 @@ plot(led.a.lai, 'LineWidth', 1.0);
 ylabel('m^2 m^{-2}')
 legend('Fruit dry weight','Stem dry weight','Leaf dry weight','Buffer content','LAI')
 setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+%% Use function to plot all the temperature variables
+figure;
+plotTemps(led)
+
+%% Canopy Temperature FIGURES
+
+% figure;
+% 
+% subplot(3, 1, 1);
+
+% plot(led.x.tCan, 'LineWidth', 1.0);
+% hold on;
+% plot(led.d.tCan, 'LineWidth', 1.0);
+% hold off;
+% ylabel('Canopy Temperature [°C]');
+% legend('x.tCan', 'd.tCan');
+% setXAxisTicksAndLabels(led.t.label, seasonLength);
+
+% plot(led.x.tCan, 'LineWidth', 1.0);
+% ylabel('Canopy Temperature [°C]');
+% legend('x.tCan');
+% setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 %% Clear the workspace
 % clear;
