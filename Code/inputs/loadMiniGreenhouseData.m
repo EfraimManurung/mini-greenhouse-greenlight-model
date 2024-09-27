@@ -1,4 +1,4 @@
-function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength)
+function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength, is_mature)
 % loadMiniGreenhouseData2 Get data from real mini-greenhouse experiments
 % The following datasets are available:
 % - 
@@ -31,7 +31,7 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
 % REMEMBER THAT it using Dataset6 for now
 %   firstDay       Where to start looking at the data 
 %                       (days since start of the season, fractions accepted)
-%                       The start of the season is Friday, May 10, 2024 12:00:00 AM
+%                       The start of the season is always start at 24:00:00 
 %   length         Length of the input in days (fractions accepted)
 %                       The length of the entire dataset is around 30 days
 % Output:
@@ -66,14 +66,28 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
 
     CO2_PPM = 400; % assumed constant value of CO2 ppm
    
+    
     %% load file
-    currentFile = mfilename('fullpath');
-    currentFolder = fileparts(currentFile);
-    
-    path = [currentFolder '\minigreenhouseleaf.mat'];
-    
-    %% load hi res 
-    minigreenhouse = load(path).minigreenhouseleaf;
+    if is_mature == 1
+        currentFile = mfilename('fullpath');
+        currentFolder = fileparts(currentFile);
+        
+        path = [currentFolder '\minigreenhousedatamaturecrops.mat'];
+        
+        % load hi res 
+        minigreenhouse = load(path).minigreenhousedatamaturecrops;
+    else
+        currentFile = mfilename('fullpath');
+        currentFolder = fileparts(currentFile);
+        
+        % path = [currentFolder '\minigreenhousedatasmallcrops.mat'];
+        path = [currentFolder '\iotdatasetstrainlstm.mat'];
+
+        % % load hi res 
+        % minigreenhouse = load(path).minigreenhousedatasmallcrops;
+        minigreenhouse = load(path).iotdatasetstrainlstm;
+
+    end
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced

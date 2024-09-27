@@ -79,10 +79,10 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseDataLeaf(fir
     currentFile = mfilename('fullpath');
     currentFolder = fileparts(currentFile);
     
-    path = [currentFolder '\minigreenhouseleaf.mat'];
+    path = [currentFolder '\minigreenhouseleaf2.mat'];
     
     %% load hi res 
-    minigreenhouse = load(path).minigreenhouseleaf;
+    minigreenhouse = load(path).minigreenhouseleaf2;
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced

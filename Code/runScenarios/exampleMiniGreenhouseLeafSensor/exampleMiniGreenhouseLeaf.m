@@ -1,4 +1,4 @@
-% exampleMiniGreenhouse3 to run the GreenLight simulation
+% exampleMiniGreenhouse with leaf temperature 
 % Using createGreenLightModel
 %
 % Efraim Manurung, Information Technology Group
@@ -14,7 +14,7 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 1; % season length in days
+seasonLength = 5; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
