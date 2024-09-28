@@ -72,21 +72,34 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
         currentFile = mfilename('fullpath');
         currentFolder = fileparts(currentFile);
         
-        path = [currentFolder '\minigreenhousedatamaturecrops.mat'];
+        %% September datasets test
+        path = [currentFolder '\septemberiotdatasetstestmaturecrops.mat'];
         
         % load hi res 
-        minigreenhouse = load(path).minigreenhousedatamaturecrops;
+        minigreenhouse = load(path).septemberiotdatasetstestmaturecrops;
+
+        disp('MATLAB LOAD DATA from septemberiotdatasetstestmaturecrops.mat');
     else
         currentFile = mfilename('fullpath');
         currentFolder = fileparts(currentFile);
         
-        % path = [currentFolder '\minigreenhousedatasmallcrops.mat'];
-        path = [currentFolder '\iotdatasetstrainlstm.mat'];
+        %% June datasets test
+        path = [currentFolder '\juneiotdatasetstestsmallcrops.mat'];
 
-        % % load hi res 
-        % minigreenhouse = load(path).minigreenhousedatasmallcrops;
-        minigreenhouse = load(path).iotdatasetstrainlstm;
+        % load hi res 
+        minigreenhouse = load(path).juneiotdatasetstestsmallcrops;
 
+        disp('MATLAB LOAD DATA from juneiotdatasetstestsmallcrops.mat')
+
+        % iotdatasets to train the DRL model
+        %path = [currentFolder '\iotdatasetstraindrl.mat'];
+        
+        % load hi res 
+        %minigreenhouse = load(path).iotdatasetstraindrl;
+
+        %% September datasets test
+        % path = [currentFolder '\septemberiotdatasetstestsmallcrops.mat'];
+        % minigreenhouse = load(path).septemberiotdatasetstestsmallcrops;
     end
     
     %% Cut out the required season

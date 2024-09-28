@@ -1,4 +1,4 @@
-% exampleMiniGreenhouse3 to run the GreenLight simulation
+% exampleMiniGreenhouse to run the GreenLight simulation
 % Using createGreenLightModel
 %
 % Efraim Manurung, Information Technology Group
