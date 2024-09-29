@@ -1,9 +1,8 @@
-% exampleMiniGreenhouse to run the GreenLight simulation
+% exampleMiniGreenhouse with leaf temperature 
 % Using createGreenLightModel
 %
 % Efraim Manurung, Information Technology Group
 % Wageningen University
-% efraim.efraimpartoginahotasi@wur.nl
 % efraim.manurung@gmail.com
 %
 % Based on:
@@ -14,19 +13,20 @@
 tic; % start the timer
 %% Set up the model
 % Weather argument for createGreenLightModel
-seasonLength = 2; % season length in days
+seasonLength = 5; % season length in days
 firstDay = 1; % days since beginning of data 
 
 % Choice of lamp
 lampType = 'led';   
 
-[outdoor, indoor, controls, startTime] = loadMiniGreenhouseData2(firstDay, seasonLength);
+[outdoor, indoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength);
 
 % DynamicElements for the measured data
 v.tAir = DynamicElement('v.tAir', [floor(indoor(:,1)) indoor(:,2)]);
 v.rhAir = DynamicElement('v.rhAir', [floor(indoor(:,1)) indoor(:,3)]);
 v.co2Air = DynamicElement('v.co2Air', [floor(indoor(:,1)) indoor(:,4)]);
 v.iInside = DynamicElement('v.iInside', [floor(indoor(:,1)) indoor(:,5)]);
+v.tCan = DynamicElement('v.tCan', [floor(indoor(:,1)) indoor(:,6)]);
 
 % Extract maximum and minimum values from each DynamicElement
 max_tAir = max(v.tAir.val(:, 2));
@@ -41,11 +41,15 @@ min_co2Air = min(v.co2Air.val(:, 2));
 max_iInside = max(v.iInside.val(:, 2));
 min_iInside = min(v.iInside.val(:, 2));
 
+max_tCan = max(v.tCan.val(:, 2));
+min_tCan = min(v.tCan.val(:, 2));
+
 % Display or store these values
 fprintf('Temperature (°C) - Max: %.2f, Min: %.2f\n', max_tAir, min_tAir);
 fprintf('Relative Humidity (%%) - Max: %.2f, Min: %.2f\n', max_rhAir, min_rhAir);
 fprintf('CO2 Concentration (ppm) - Max: %.2f, Min: %.2f\n', max_co2Air, min_co2Air);
 fprintf('PAR Inside (W/m^2) - Max: %.2f, Min: %.2f\n', max_iInside, min_iInside);
+fprintf('Leaf Temperature (°C) - Max: %.2f, Min: %.2f\n', max_tCan, min_tCan);
 
 % number of seconds since beginning of year to startTime
 secsInYear = seconds(startTime-datetime(year(startTime),1,1,0,0,0));
@@ -116,18 +120,21 @@ rrmseTair = (sqrt(mean((led.x.tAir.val(1:compareLength,2)-v.tAir.val(1:compareLe
 rrmseRhair = (sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2))./mean(v.rhAir.val(1:compareLength,2))) * 100;
 rrmseCo2air  = (sqrt(mean((led.a.co2InPpm.val(1:compareLength,2)-v.co2Air.val(1:compareLength,2)).^2))./mean(v.co2Air.val(1:compareLength,2))) * 100;
 rrmseIinside = (sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2))./mean(v.iInside.val(1:compareLength,2))) * 100;
+rrmseTCan  = (sqrt(mean((led.x.tCan.val(1:compareLength,2)-v.tCan.val(1:compareLength,2)).^2))./mean(v.tCan.val(1:compareLength,2))) * 100;
 
 % Calculate RMSE
 rmseTair = sqrt(mean((led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2)).^2));
 rmseRhair = sqrt(mean((led.a.rhIn.val(1:compareLength,2)-v.rhAir.val(1:compareLength,2)).^2));
 rmseCo2air = sqrt(mean((led.a.co2InPpm.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2)).^2));
 rmseIinside = sqrt(mean((sunLampIrradiance - v.iInside.val(1:compareLength,2)).^2));
+rmseTCan = sqrt(mean((led.x.tCan.val(1:compareLength,2) - v.tCan.val(1:compareLength,2)).^2));
 
 % Calculate ME 
 meTair = mean(led.x.tAir.val(1:compareLength,2) - v.tAir.val(1:compareLength,2));
 meRhair = mean(led.a.rhIn.val(1:compareLength,2)- v.rhAir.val(1:compareLength,2));
 meCo2air = mean(led.a.co2InPpm.val(1:compareLength,2) - v.co2Air.val(1:compareLength,2));
 meIinside = mean(sunLampIrradiance - v.iInside.val(1:compareLength,2));
+meTCan = mean(led.x.tCan.val(1:compareLength,2) - v.tCan.val(1:compareLength,2));
 
 % Save the output 
 % save exampleMiniGreenhouse
@@ -150,14 +157,17 @@ fprintf('| RRMSE Tair      | %-12.2f| %%              \n', rrmseTair);
 fprintf('| RRMSE Rhair     | %-12.2f| %%              \n', rrmseRhair);
 fprintf('| RRMSE Co2air    | %-12.2f| %%              \n', rrmseCo2air);
 fprintf('| RRMSE IInside   | %-12.2f| %%              \n', rrmseIinside);
+fprintf('| RRMSE tCan      | %-12.2f| %%              \n', rrmseTCan);
 fprintf('| RMSE Tair       | %-12.2f| °C              \n', rmseTair);
 fprintf('| RMSE Rhair      | %-12.2f| %%              \n', rmseRhair);
 fprintf('| RMSE Co2air     | %-12.2f| ppm             \n', rmseCo2air);
 fprintf('| RMSE IInside    | %-12.2f| W m^{-2}        \n', rmseIinside);
+fprintf('| RMSE tCan       | %-12.2f| °C              \n', rmseTCan);
 fprintf('| ME Tair         | %-12.2f| °C              \n', meTair);
 fprintf('| ME Rhair        | %-12.2f| %%              \n', meRhair);
 fprintf('| ME Co2air       | %-12.2f| ppm             \n', meCo2air);
 fprintf('| ME Iinside      | %-12.2f| W m^{-2}        \n', meIinside);
+fprintf('| ME tCan         | %-12.2f| °C              \n', meTCan);
 fprintf('---------------------------------------------\n');
 
 %% Plot some outputs 
@@ -169,10 +179,12 @@ figure;
 subplot(5, 1, 1); % 3 rows, 1 column, 1st subplot
 %plot(v.tCan.val(:, 1), v.tCan.val(:, 2), 'LineWidth, 1.0);
 %hold on
+plot(v.tCan.val(:, 1), v.tCan.val(:, 2), 'LineWidth', 1.0);
+hold on;
 plot(led.x.tCan, 'LineWidth', 1.0);
 ylabel('Canopy Temp [°C]');
-%legend('Canopy-Measured', 'Canopy-Simulated');
-legend('Canopy Simulated');
+legend('Canopy-Measured', 'Canopy-Simulated');
+%legend('Canopy Simulated');
 setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 subplot(5, 1, 2); % 3 rows, 1 column, 1st subplot
@@ -282,7 +294,11 @@ setXAxisTicksAndLabels(led.t.label, seasonLength);
 
 %% Use function to plot all the temperature variables
 figure;
-plotTemps(led)
+%plotTemps(led)
+plot(led.x.tCan, 'LineWidth', 1.0); hold on;
+plot(led.x.tAir, 'LineWidth', 1.0);
+ylabel('Temperature [°C]');
+legend('Canopy-Simulated', 'Indoor-Simulated');
 
 %% Canopy Temperature FIGURES
 

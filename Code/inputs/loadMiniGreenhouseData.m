@@ -1,4 +1,4 @@
-function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength, is_mature)
+function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength)
 % loadMiniGreenhouseData2 Get data from real mini-greenhouse experiments
 % The following datasets are available:
 % - 
@@ -31,7 +31,7 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
 % REMEMBER THAT it using Dataset6 for now
 %   firstDay       Where to start looking at the data 
 %                       (days since start of the season, fractions accepted)
-%                       The start of the season is always start at 24:00:00 
+%                       The start of the season is Friday, May 10, 2024 12:00:00 AM
 %   length         Length of the input in days (fractions accepted)
 %                       The length of the entire dataset is around 30 days
 % Output:
@@ -61,46 +61,28 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
 %       controls(:,8)     Interlight on/off                 0/1 (1 is on)
 %       controls(:,9)     CO2 injection                     0/1 (1 is on)
 %       controls(:,10)    Boiler valve [-]                  0-1 where 1 is full capacity and 0 is off 
+%       
+%
+%   indoor          (optional) A 3 column matrix with:
+%       indoor(:,1)     timestamps of the input [s] in regular intervals of 300, starting with 0
+%       indoor(:,2)     temperature       [°C]             indoor air temperature
+%       indoor(:,3)     vapor pressure    [Pa]             indoor vapor concentration
+%       indoor(:,4)     co2 concentration [mg m^{-3}]      indoor co2 concentration
+%       indoor(:,5)     crop temperature  [°C]             indoor leaf temperature d.tCan
+%       indoor(:,6)     PAR In (Radiation inside)          W m^{-2}
 
     SECONDS_IN_DAY = 24*60*60;
 
     CO2_PPM = 400; % assumed constant value of CO2 ppm
    
-    
     %% load file
-    if is_mature == 1
-        currentFile = mfilename('fullpath');
-        currentFolder = fileparts(currentFile);
-        
-        %% September datasets test
-        path = [currentFolder '\septemberiotdatasetstestmaturecrops.mat'];
-        
-        % load hi res 
-        minigreenhouse = load(path).septemberiotdatasetstestmaturecrops;
-
-        disp('MATLAB LOAD DATA from septemberiotdatasetstestmaturecrops.mat');
-    else
-        currentFile = mfilename('fullpath');
-        currentFolder = fileparts(currentFile);
-        
-        %% June datasets test
-        path = [currentFolder '\juneiotdatasetstestsmallcrops.mat'];
-
-        % load hi res 
-        minigreenhouse = load(path).juneiotdatasetstestsmallcrops;
-
-        disp('MATLAB LOAD DATA from juneiotdatasetstestsmallcrops.mat')
-
-        % iotdatasets to train the DRL model
-        %path = [currentFolder '\iotdatasetstraindrl.mat'];
-        
-        % load hi res 
-        %minigreenhouse = load(path).iotdatasetstraindrl;
-
-        %% September datasets test
-        % path = [currentFolder '\septemberiotdatasetstestsmallcrops.mat'];
-        % minigreenhouse = load(path).septemberiotdatasetstestsmallcrops;
-    end
+    currentFile = mfilename('fullpath');
+    currentFolder = fileparts(currentFile);
+    
+    path = [currentFolder '\septemberiotdatasetstestmaturecrops.mat'];
+    
+    %% load hi res 
+    minigreenhouse = load(path).septemberiotdatasetstestmaturecrops;
     
     %% Cut out the required season
     interval = minigreenhouse(2,1) - minigreenhouse(1,1); % assumes all data is equally spaced
@@ -166,12 +148,12 @@ function [outdoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seaso
     %   indoor(:,5)     PAR In (Radiation inside)          W m^{-2}
     %   indoor(:,6)     Leaf temperature [°C]
 
-    % indoor(:,1) = outdoor(:,1);
+    indoor(:,1) = outdoor(:,1);
     indoor(:,2) = inputData(:,4);
-    % indoor(:,3) = inputData(:,6);
-    % indoor(:,4) = inputData(:,8);
-    % indoor(:,5) = inputData(:,3);
-    % indoor(:,6) = inputData(:,13);
+    indoor(:,3) = inputData(:,6);
+    indoor(:,4) = inputData(:,8);
+    indoor(:,5) = inputData(:,3);
+    indoor(:,6) = inputData(:,13);
 
     %% CONTROL
     % Control reformartted dataset
