@@ -1,8 +1,9 @@
 function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData(firstDay, seasonLength)
-% loadMiniGreenhouseData2 Get data from real mini-greenhouse experiments
-% The following datasets are available:
-% - 
-% - 
+% loadMiniGreenhouseData Get data from real mini-greenhouse experiments
+%
+% Efraim Manurung, Information Technology Group
+% Wageningen University
+% efraim.manurung@gmail.com
 % The data is given in 5-minute intervals.
 % Based on:
 % David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. 
@@ -28,7 +29,6 @@ function [outdoor, indoor, controls, startTime] = loadMiniGreenhouseData(firstDa
 % 13        Leaf temperature                    °C
 %
 % Inputs: 
-% REMEMBER THAT it using Dataset6 for now
 %   firstDay       Where to start looking at the data 
 %                       (days since start of the season, fractions accepted)
 %                       The start of the season is Friday, May 10, 2024 12:00:00 AM
